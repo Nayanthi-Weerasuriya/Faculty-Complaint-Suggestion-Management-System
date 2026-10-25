@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,107 +9,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Custom styling -->
-    <style>
-        :root {
-            --primary-navy: #002b49;
-            --secondary-navy: #0b4570;
-            --accent-gold: #c89a3f;
-            --accent-gold-hover: #b08533;
-            --status-submitted: #0dcaf0;
-            --status-under-review: #6f42c1;
-            --status-in-progress: #fd7e14;
-            --status-solved: #198754;
-            --status-closed: #6c757d;
-            --status-rejected: #dc3545;
-        }
-        body {
-            background-color: #f4f6f9;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-        .navbar-faculty {
-            background-color: var(--primary-navy);
-            border-bottom: 3px solid var(--accent-gold);
-        }
-        .navbar-faculty .navbar-brand {
-            color: #ffffff;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-        }
-        .navbar-faculty .nav-link {
-            color: rgba(255, 255, 255, 0.88);
-            font-weight: 500;
-            margin-right: 0.35rem;
-            transition: color 0.15s ease-in-out;
-        }
-        .navbar-faculty .nav-link:hover, .navbar-faculty .nav-link.active {
-            color: #ffffff;
-            text-decoration: underline;
-            text-underline-offset: 6px;
-        }
-        .badge-role {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0.35em 0.65em;
-            background-color: var(--accent-gold);
-            color: #000;
-            font-weight: 600;
-        }
-        .footer-faculty {
-            margin-top: auto;
-            background-color: #1a2530;
-            color: #a4b1bc;
-            font-size: 0.88rem;
-            border-top: 1px solid #2d3b48;
-        }
-        .card-stat {
-            border: none;
-            border-radius: 0.75rem;
-            box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.05);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .card-stat:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
-        }
-        .status-badge {
-            font-weight: 600;
-            font-size: 0.82rem;
-            padding: 0.35em 0.75em;
-            border-radius: 50rem;
-        }
-        .priority-urgent {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fca5a5;
-            font-weight: 700;
-        }
-        .priority-normal {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-        }
-        .table-responsive {
-            background: #ffffff;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.04);
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/fmsc-theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <!-- Top Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-faculty sticky-top shadow-sm">
+    <nav class="navbar navbar-expand-xl navbar-dark navbar-faculty shadow-sm">
         <div class="container-fluid px-lg-4">
-            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'landing' %}">
                 <i class="bi bi-shield-check me-2 fs-4 text-warning"></i>
                 <div>
                     <span class="d-block lh-1 fs-5">FMSC Complaint & Suggestion Portal</span>
-                    <small class="text-white-50" style="font-size: 0.72rem;">Faculty of Management Studies & Commerce Â· USJ</small>
+                    <small class="text-white-50" style="font-size: 0.72rem;">Faculty of Management Studies & Commerce · USJ</small>
                 </div>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#facultyNavbar" aria-controls="facultyNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -118,32 +34,34 @@
             <div class="collapse navbar-collapse" id="facultyNavbar">
                 {% if user.is_authenticated %}
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                    {% if user.is_reporting_user %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'home' %}"><i class="bi bi-house-door me-1"></i> Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'submit_case' %}"><i class="bi bi-plus-circle me-1"></i> Submit Case</a>
                     </li>
+                    {% endif %}
 
-                    {% if user.is_admin_user %}
-                    <!-- Clean Focused Administrator Navigation -->
+                    {% if user.is_system_administrator %}
+                    <!-- System Administrator: platform configuration and maintenance -->
                     <li class="nav-item">
-                        <a class="nav-link text-warning fw-semibold" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
+                        <a class="nav-link text-warning fw-semibold" href="{% url 'system_dashboard' %}"><i class="bi bi-gear me-1"></i> System Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'my_cases' %}"><i class="bi bi-folder2-open me-1"></i> Cases Directory</a>
+                        <a class="nav-link" href="/admin/accounts/user/"><i class="bi bi-people me-1"></i> Users & Roles</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white-50" href="#" id="adminTools" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-sliders me-1"></i> Management Tools
-                        </a>
-                        <ul class="dropdown-menu shadow" aria-labelledby="adminTools">
-                            <li><a class="dropdown-item" href="{% url 'authority_list' %}"><i class="bi bi-diagram-3 me-2 text-primary"></i> Manage Authorities (CRUD)</a></li>
-                            <li><a class="dropdown-item" href="{% url 'authority_dashboard' %}"><i class="bi bi-tools me-2 text-warning"></i> Authority Work Queue Preview</a></li>
-                            <li><a class="dropdown-item" href="{% url 'management_dashboard' %}"><i class="bi bi-graph-up me-2 text-success"></i> Executive Governance Analytics</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-secondary small" href="/admin/" target="_blank"><i class="bi bi-gear me-2"></i> Django System Settings</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/categories/category/"><i class="bi bi-tags me-1"></i> Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'authority_list' %}"><i class="bi bi-diagram-3 me-1"></i> Authorities</a>
+                    </li>
+
+                    {% elif user.is_administrator %}
+                    <!-- Complaint Coordinator: operational case-management only -->
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-semibold" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Case Operations</a>
                     </li>
 
                     {% elif user.is_authority_user %}
@@ -151,17 +69,13 @@
                     <li class="nav-item">
                         <a class="nav-link text-warning fw-semibold" href="{% url 'authority_dashboard' %}"><i class="bi bi-tools me-1"></i> Department Work Queue</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'my_cases' %}"><i class="bi bi-folder2-open me-1"></i> My Cases</a>
-                    </li>
-
                     {% elif user.is_management_user %}
                     <!-- Faculty Management (Dean) -->
                     <li class="nav-item">
                         <a class="nav-link text-warning fw-semibold" href="{% url 'management_dashboard' %}"><i class="bi bi-graph-up me-1"></i> Executive Analytics</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'my_cases' %}"><i class="bi bi-folder2-open me-1"></i> All Cases</a>
+                        <a class="nav-link" href="{% url 'management_reports' %}"><i class="bi bi-file-earmark-text me-1"></i> Detailed Reports</a>
                     </li>
 
                     {% else %}
@@ -187,16 +101,16 @@
                             <li class="dropdown-header d-flex justify-content-between align-items-center">
                                 <strong>Notifications</strong>
                                 {% if unread_notifications_count > 0 %}
-                                <a href="{% url 'mark_all_notifications_read' %}" class="small text-decoration-none">Mark all read</a>
+                                <form method="post" action="{% url 'mark_all_notifications_read' %}">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0">Mark all read</button></form>
                                 {% endif %}
                             </li>
                             <li><hr class="dropdown-divider my-1"></li>
                             {% for notif in recent_notifications %}
                             <li>
-                                <a class="dropdown-item py-2 px-3 {% if not notif.is_read %}bg-light fw-bold{% endif %}" href="{% url 'mark_notification_read' notif.pk %}">
+                                <form method="post" action="{% url 'mark_notification_read' notif.pk %}">{% csrf_token %}<button type="submit" class="dropdown-item py-2 px-3 {% if not notif.is_read %}bg-light fw-bold{% endif %}">
                                     <div class="small text-truncate">{{ notif.title }}</div>
                                     <small class="text-muted d-block" style="font-size: 0.75rem;">{{ notif.sent_at|timesince }} ago</small>
-                                </a>
+                                </button></form>
                             </li>
                             {% empty %}
                             <li class="px-3 py-2 text-muted small text-center">No notifications yet</li>
@@ -230,7 +144,11 @@
                     </div>
                 </div>
                 {% else %}
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}#how-it-works">How it works</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}#help">Help</a></li>
+                    <li class="nav-item"><a class="btn btn-warning btn-sm" href="{% url 'register' %}">Create account</a></li>
                     <li class="nav-item">
                         <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}"><i class="bi bi-box-arrow-in-right me-1"></i> Sign In</a>
                     </li>
@@ -262,7 +180,7 @@
         <div class="container-fluid px-lg-4 d-flex flex-wrap justify-content-between align-items-center">
             <div>
                 <strong>Faculty Complaint & Suggestion Management System</strong> | University of Sri Jayewardenepura
-                <br><small class="text-secondary">Course ITC 3380 Â· Designed for Dr. Ranil Peiris's Proposal Â· Version 1.0</small>
+                <br><small class="text-secondary">Faculty services and support</small>
             </div>
             <div class="small text-end mt-2 mt-sm-0">
                 <span>Secure Digital Governance Portal</span>
@@ -272,6 +190,36 @@
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.querySelectorAll('form[enctype="multipart/form-data"]').forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) return;
+            event.preventDefault();
+            const data = new FormData(form);
+            if (event.submitter && event.submitter.name) data.append(event.submitter.name, event.submitter.value);
+            const notice = document.createElement('div');
+            notice.className = 'alert alert-info mt-3';
+            notice.setAttribute('role', 'status');
+            notice.textContent = 'Uploading...';
+            form.appendChild(notice);
+            const buttons = form.querySelectorAll('button[type="submit"]');
+            buttons.forEach(button => button.disabled = true);
+            const upload = new XMLHttpRequest();
+            upload.open('POST', form.action || window.location.href);
+            upload.upload.onprogress = event => {
+                if (event.lengthComputable) notice.textContent = 'Uploading: ' + Math.round(event.loaded / event.total * 100) + '%';
+            };
+            upload.onload = () => {
+                if (upload.status >= 200 && upload.status < 400) {
+                    if (upload.responseURL !== window.location.href) window.location.assign(upload.responseURL);
+                    else { document.open(); document.write(upload.responseText); document.close(); }
+                } else { notice.textContent = 'Upload failed. Please try again.'; buttons.forEach(button => button.disabled = false); }
+            };
+            upload.onerror = () => { notice.textContent = 'Connection lost. Please try again.'; buttons.forEach(button => button.disabled = false); };
+            upload.send(data);
+        });
+    });
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
