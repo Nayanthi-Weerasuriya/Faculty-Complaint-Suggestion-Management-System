@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profile - FMSC Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="card-title mb-0 fw-bold"><i class="bi bi-person-circle me-2 text-primary"></i> User Profile</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4 text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-2" style="width: 72px; height: 72px; font-size: 1.8rem; background-color: #002b49 !important;">
+                        {{ user.first_name|default:user.username|slice:":1"|upper }}
+                    </div>
+                    <h5 class="fw-bold mb-0">{{ user.get_full_name|default:user.username }}</h5>
+                    <span class="badge bg-warning text-dark text-uppercase mt-1">{{ user.get_role_display }}</span>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium">University Email</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Registration No. / Staff ID</label>
+                            {{ form.reg_or_staff_id }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Contact Phone</label>
+                            {{ form.contact_number }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Department / Faculty Division</label>
+                            {{ form.department_or_unit }}
+                        </div>
+                    </div>
+                    <div class="mt-4 text-end">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary me-2">Back to Home</a>
+                        <button type="submit" class="btn btn-primary px-4" style="background-color: #002b49;">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

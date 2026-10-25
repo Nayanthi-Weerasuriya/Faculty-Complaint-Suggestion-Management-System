@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - FMSC Complaint & Suggestion App{% endblock %}
+
+{% block content %}
+<!-- Welcome & Quick Action Bar (Wireframe 2) -->
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h3 class="fw-bold text-dark mb-1">
+            Welcome, {{ user.first_name|default:user.username }}
+        </h3>
+        <p class="text-muted mb-0">
+            FMSC Complaint & Suggestion Management Portal · {{ user.department_or_unit|default:"Faculty Community" }}
+        </p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex flex-wrap gap-2 justify-content-md-end">
+        <a href="{% url 'submit_case' %}" class="btn btn-primary fw-medium" style="background-color: #002b49; border-color: #002b49;">
+            <i class="bi bi-plus-circle me-1"></i> Submit New Complaint / Suggestion
+        </a>
+        <a href="{% url 'my_cases' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-folder2 me-1"></i> My Cases
+        </a>
+        <a href="{% url 'notification_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-bell me-1"></i> Notifications
+        </a>
+    </div>
+</div>
+
+<!-- My Case Summary Cards (Wireframe 2) -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-info">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-uppercase text-muted small fw-semibold">Submitted Cases</div>
+                    <div class="fs-2 fw-bold text-info">{{ submitted_count|stringformat:"02d" }}</div>
+                </div>
+                <div class="rounded-circle bg-info-subtle p-3 text-info">
+                    <i class="bi bi-send fs-4"></i>
+                </div>
+            </div>
+            <small class="text-muted mt-2 d-block">Awaiting administrative review</small>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-warning">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-uppercase text-muted small fw-semibold">In Progress Cases</div>
+                    <div class="fs-2 fw-bold text-warning">{{ in_progress_count|stringformat:"02d" }}</div>
+                </div>
+                <div class="rounded-circle bg-warning-subtle p-3 text-warning">
+                    <i class="bi bi-gear-wide-connected fs-4"></i>
+                </div>
+            </div>
+            <small class="text-muted mt-2 d-block">Assigned and currently being addressed</small>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-success">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-uppercase text-muted small fw-semibold">Solved Cases</div>
+                    <div class="fs-2 fw-bold text-success">{{ solved_count|stringformat:"02d" }}</div>
+                </div>
+                <div class="rounded-circle bg-success-subtle p-3 text-success">
+                    <i class="bi bi-check2-circle fs-4"></i>
+                </div>
+            </div>
+            <small class="text-muted mt-2 d-block">Successfully completed and resolved</small>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Cases Section (Wireframe 2) -->
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-clock-history me-2 text-primary"></i> Recent Cases
+        </h5>
+        <a href="{% url 'my_cases' %}" class="small text-decoration-none fw-medium">View all cases &rarr;</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width: 140px;">Case No.</th>
+                    <th scope="col">Title</th>
+                    <th scope="col" style="width: 120px;">Type</th>
+                    <th scope="col" style="width: 110px;">Priority</th>
+                    <th scope="col" style="width: 140px;">Status</th>
+                    <th scope="col" style="width: 110px;" class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for case in recent_cases %}
+                <tr>
+                    <td>
+                        <a href="{% url 'case_detail' case.pk %}" class="fw-bold text-decoration-none font-monospace">
+                            {{ case.case_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="fw-semibold text-dark">{{ case.title }}</div>
+                        <small class="text-muted">{{ case.category.name }} · {{ case.location }}</small>
+                    </td>
+                    <td>
+                        <span class="badge {% if case.case_type == 'complaint' %}bg-secondary{% else %}bg-primary{% endif %}">
+                            {{ case.get_case_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if case.priority == 'urgent' %}priority-urgent{% else %}priority-normal{% endif %}">
+                            {{ case.get_priority_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill 
+                            {% if case.status == 'submitted' %}bg-info text-dark
+                            {% elif case.status == 'under_review' %}bg-primary
+                            {% elif case.status == 'assigned' %}bg-secondary
+                            {% elif case.status == 'in_progress' %}bg-warning text-dark
+                            {% elif case.status == 'solved' %}bg-success
+                            {% elif case.status == 'closed' %}bg-dark
+                            {% elif case.status == 'rejected' %}bg-danger
+                            {% else %}bg-light text-dark border{% endif %}">
+                            {{ case.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'case_detail' case.pk %}" class="btn btn-sm btn-outline-primary">
+                            View <i class="bi bi-chevron-right ms-1"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                        No cases recorded yet. Click <strong>Submit New Complaint / Suggestion</strong> to get started!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

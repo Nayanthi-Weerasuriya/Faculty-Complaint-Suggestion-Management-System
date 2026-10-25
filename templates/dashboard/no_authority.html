@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}No Authority Unit Assigned{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-6 text-center">
+        <div class="card border-0 shadow-sm p-5 rounded-4">
+            <i class="bi bi-exclamation-triangle-fill text-warning fs-1 mb-3"></i>
+            <h4 class="fw-bold">No Authority Unit Assigned</h4>
+            <p class="text-muted">Your user account is designated as an Authority staff member, but you have not yet been linked to a specific department or unit (e.g. Maintenance Division, IT Unit).</p>
+            <p class="small text-muted">Please ask the Faculty System Administrator to assign your user to an Authority.</p>
+            <div>
+                <a href="{% url 'home' %}" class="btn btn-primary" style="background-color: #002b49;">Return to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

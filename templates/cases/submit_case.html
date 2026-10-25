@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit New Case - FMSC Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                <i class="bi bi-file-earmark-plus-fill fs-4 text-primary me-2"></i>
+                <div>
+                    <h5 class="fw-bold mb-0">Submit Complaint / Suggestion</h5>
+                    <small class="text-muted">Wireframe 3: Faculty Case Submission Form</small>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Case Type <span class="text-danger">*</span></label>
+                            {{ form.case_type }}
+                            <small class="text-muted">Is this an issue to fix (Complaint) or an enhancement proposal (Suggestion)?</small>
+                            {% if form.case_type.errors %}
+                            <div class="text-danger small">{{ form.case_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Priority Level <span class="text-danger">*</span></label>
+                            {{ form.priority }}
+                            <small class="text-muted">Mark as Urgent if it immediately disrupts academic or examination activities.</small>
+                            {% if form.priority.errors %}
+                            <div class="text-danger small">{{ form.priority.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="text-danger small">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Location <span class="text-danger">*</span></label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                            <div class="text-danger small">{{ form.location.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="text-danger small">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Detailed Description <span class="text-danger">*</span></label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="text-danger small">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4 p-3 bg-light rounded-3 border">
+                        <label class="form-label fw-semibold mb-1">
+                            <i class="bi bi-paperclip me-1 text-primary"></i> Supporting Evidence (Optional Attachment)
+                        </label>
+                        <p class="text-muted small mb-2">Upload images (JPG, PNG, WEBP) or video evidence (MP4, MOV). Maximum file size: 25 MB.</p>
+                        {{ form.attachment_file }}
+                        {% if form.attachment_file.errors %}
+                        <div class="text-danger small mt-1">{{ form.attachment_file.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4 p-3 bg-light rounded-3 border border-warning-subtle">
+                        <div class="form-check">
+                            {{ form.declaration }}
+                            <label class="form-check-label fw-semibold ms-2" for="{{ form.declaration.id_for_label }}">
+                                I confirm that the information submitted is accurate to the best of my knowledge.
+                            </label>
+                        </div>
+                        {% if form.declaration.errors %}
+                        <div class="text-danger small mt-1 ms-4">{{ form.declaration.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold" style="background-color: #002b49; border-color: #002b49;">
+                            <i class="bi bi-send-check me-1"></i> Submit Case
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Authority Work Queue - FMSC Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">
+            <i class="bi bi-tools text-primary me-2"></i> Authority Dashboard: <span class="text-primary">{{ authority.name|default:"General Authority Queue" }}</span>
+        </h3>
+        <small class="text-muted">Wireframe 6: Departmental Work Queue & Active Case Tracking</small>
+    </div>
+
+    {% if all_authorities %}
+    <!-- Admin authority switcher for demo flexibility -->
+    <form method="get" class="d-flex align-items-center gap-2">
+        <label class="small text-muted fw-semibold">View Authority Queue:</label>
+        <select name="authority_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for a in all_authorities %}
+            <option value="{{ a.id }}" {% if authority.id == a.id %}selected{% endif %}>{{ a.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
+</div>
+
+<!-- Wireframe 6: Authority Operational Indicators -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-primary">
+            <div class="text-uppercase text-muted small fw-semibold">Assigned Cases</div>
+            <div class="fs-2 fw-bold text-primary">{{ assigned_count }}</div>
+            <small class="text-muted">Total allocated to this unit</small>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-danger">
+            <div class="text-uppercase text-muted small fw-semibold">Urgent Cases</div>
+            <div class="fs-2 fw-bold text-danger">{{ urgent_count }}</div>
+            <small class="text-muted">Immediate action required</small>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-warning">
+            <div class="text-uppercase text-muted small fw-semibold">In Progress</div>
+            <div class="fs-2 fw-bold text-warning">{{ in_progress_count }}</div>
+            <small class="text-muted">Currently being addressed</small>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-success">
+            <div class="text-uppercase text-muted small fw-semibold">Solved This Month</div>
+            <div class="fs-2 fw-bold text-success">{{ solved_this_month }}</div>
+            <small class="text-muted">Successfully closed cases</small>
+        </div>
+    </div>
+</div>
+
+<!-- Wireframe 6: My Assigned Cases Work Queue Table -->
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-list-task me-2 text-primary"></i> Active Work Queue (Pending Action)
+        </h5>
+        <span class="badge bg-secondary">{{ work_queue|length }} Cases Pending</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width: 140px;">Case No.</th>
+                    <th scope="col">Title & Location</th>
+                    <th scope="col" style="width: 130px;">Current Status</th>
+                    <th scope="col" style="width: 110px;">Priority</th>
+                    <th scope="col" style="width: 120px;">Age Days</th>
+                    <th scope="col" style="width: 140px;" class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for case in work_queue %}
+                <tr {% if case.priority == 'urgent' %}class="table-danger"{% endif %}>
+                    <td>
+                        <a href="{% url 'case_detail' case.pk %}" class="fw-bold text-decoration-none font-monospace">
+                            {{ case.case_number }}
+                        </a>
+                        <div class="small text-muted">{{ case.submitted_at|date:"M d, Y" }}</div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold text-dark">{{ case.title }}</div>
+                        <small class="text-muted"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ case.location }}</small>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill 
+                            {% if case.status == 'in_progress' %}bg-warning text-dark
+                            {% elif case.status == 'waiting_for_info' %}bg-secondary
+                            {% elif case.status == 'assigned' %}bg-info text-dark
+                            {% else %}bg-light text-dark border{% endif %}">
+                            {{ case.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if case.priority == 'urgent' %}priority-urgent{% else %}priority-normal{% endif %}">
+                            {{ case.get_priority_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if case.age_days >= 5 %}bg-danger{% elif case.age_days >= 3 %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                            {{ case.age_days }} days
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'authority_update_case' case.pk %}" class="btn btn-sm btn-success fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> [ Update ]
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-check2-all fs-1 d-block mb-2 text-success"></i>
+                        No pending cases in this authority's work queue. All clear!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

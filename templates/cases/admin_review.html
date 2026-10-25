@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Case Review: {{ case.case_number }} - Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-0 text-primary">Case Review: {{ case.case_number }}</h5>
+                    <small class="text-muted">Wireframe 5: Admin Case Review and Assignment</small>
+                </div>
+                <a href="{% url 'case_detail' case.pk %}" class="btn btn-outline-secondary btn-sm">Cancel / Back</a>
+            </div>
+            <div class="card-body p-4">
+                <!-- Case Summary Info Table (Wireframe 5) -->
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light" style="width: 25%;">Title</th>
+                                <td><strong class="text-dark">{{ case.title }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Submitted By</th>
+                                <td>{{ case.submitted_by.get_full_name|default:case.submitted_by.username }} ({{ case.submitted_by.get_role_display }})</td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Type</th>
+                                <td>
+                                    <span class="badge {% if case.case_type == 'complaint' %}bg-secondary{% else %}bg-primary{% endif %}">
+                                        {{ case.get_case_type_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Location</th>
+                                <td><i class="bi bi-geo-alt text-danger me-1"></i>{{ case.location }}</td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Detailed Description</th>
+                                <td class="text-secondary" style="white-space: pre-wrap;">{{ case.description }}</td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Attachments</th>
+                                <td>
+                                    {% for att in case.attachments.all %}
+                                        <a href="{{ att.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary me-1 mb-1">
+                                            <i class="bi bi-eye me-1"></i> View {{ att.get_file_type_display }} ({{ att.file_name }})
+                                        </a>
+                                    {% empty %}
+                                        <span class="text-muted small">No attachments uploaded</span>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Admin Action Form -->
+                <form method="post" class="bg-light p-4 rounded-3 border">
+                    {% csrf_token %}
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2 text-primary"></i> Admin Action</h5>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Confirm / Adjust Category</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="text-danger small">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Confirm / Adjust Priority</label>
+                            {{ form.priority }}
+                            {% if form.priority.errors %}
+                            <div class="text-danger small">{{ form.priority.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Admin Status Action</label>
+                            {{ form.status }}
+                            <small class="text-muted">Status: Under Review / Not Started / Assigned / Rejected</small>
+                            {% if form.status.errors %}
+                            <div class="text-danger small">{{ form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Assign To Responsible Authority</label>
+                            {{ form.assigned_authority }}
+                            <small class="text-muted">Select: Maintenance Division / IT Unit / Dean's Office / etc.</small>
+                            {% if form.assigned_authority.errors %}
+                            <div class="text-danger small">{{ form.assigned_authority.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Internal Note / Rejection Reason</label>
+                            {{ form.admin_notes }}
+                            <small class="text-muted">Admin note for authority, or required justification if rejecting submission.</small>
+                            {% if form.admin_notes.errors %}
+                            <div class="text-danger small">{{ form.admin_notes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" name="action" value="save" class="btn btn-primary px-4 fw-medium" style="background-color: #002b49;">
+                            <i class="bi bi-check2-circle me-1"></i> Save Changes / Assign Case
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

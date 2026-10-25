@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Management Dashboard - FMSC Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Faculty Management Dashboard</h3>
+        <small class="text-muted">Wireframe 8: Strategic Governance, Resolution Metrics & Department Performance</small>
+    </div>
+    <div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-speedometer2 me-1"></i> Operational Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Wireframe 8: Key Governance Metrics -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-stat bg-white p-3 border-top border-4 border-primary">
+            <div class="text-uppercase text-muted small fw-semibold">Complaint vs Suggestion</div>
+            <div class="fs-4 fw-bold text-dark mt-1">
+                <span class="text-secondary">{{ complaints_count }}</span> <small class="fs-6 text-muted">Complaints</small>
+                <span class="text-muted mx-1">/</span>
+                <span class="text-primary">{{ suggestions_count }}</span> <small class="fs-6 text-muted">Suggestions</small>
+            </div>
+            <div class="progress mt-3" style="height: 6px;">
+                <div class="progress-bar bg-secondary" role="progressbar" style="width: 60%"></div>
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 40%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-stat bg-white p-3 border-top border-4 border-danger">
+            <div class="text-uppercase text-muted small fw-semibold">Urgent vs Normal</div>
+            <div class="fs-4 fw-bold text-dark mt-1">
+                <span class="text-danger">{{ urgent_count }}</span> <small class="fs-6 text-muted">Urgent</small>
+                <span class="text-muted mx-1">/</span>
+                <span class="text-info">{{ normal_count }}</span> <small class="fs-6 text-muted">Normal</small>
+            </div>
+            <div class="progress mt-3" style="height: 6px;">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: 15%"></div>
+                <div class="progress-bar bg-info" role="progressbar" style="width: 85%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-stat bg-white p-3 border-top border-4 border-success">
+            <div class="text-uppercase text-muted small fw-semibold">Resolution Rate</div>
+            <div class="fs-2 fw-bold text-success">{{ resolution_rate }}%</div>
+            <div class="progress mt-2" style="height: 6px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ resolution_rate }}%"></div>
+            </div>
+            <small class="text-muted mt-1 d-block">Cases successfully resolved</small>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-stat bg-white p-3 border-top border-4 border-info">
+            <div class="text-uppercase text-muted small fw-semibold">Average Resolution Days</div>
+            <div class="fs-2 fw-bold text-info">{{ avg_resolution_days }} <small class="fs-6 text-muted">days</small></div>
+            <small class="text-muted mt-1 d-block">Turnaround from submission to solve</small>
+        </div>
+    </div>
+</div>
+
+<!-- Wireframe 8: Top Incident Categories -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-tags me-2 text-primary"></i> Top Categories Distribution</h6>
+    </div>
+    <div class="card-body p-4">
+        <div class="row g-3">
+            {% for cat in top_categories %}
+            <div class="col-md-4 col-sm-6">
+                <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold text-dark">{{ cat.name }}</div>
+                        <small class="text-muted">{{ cat.case_count }} reported incidents</small>
+                    </div>
+                    <span class="badge bg-primary rounded-pill px-3 py-2 fs-6" style="background-color: #002b49 !important;">
+                        {{ cat.case_count }}
+                    </span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted mb-0">No categorized case data recorded.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Wireframe 8: Authority-wise Pending Cases Table -->
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-building me-2 text-primary"></i> Authority-wise Pending Cases & Average Age
+            </h5>
+            <small class="text-muted">Section 9 & Wireframe 8: Departmental accountability and aging breakdown</small>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width: 250px;">Authority Division</th>
+                    <th scope="col" class="text-center" style="width: 130px;">Total Assigned</th>
+                    <th scope="col" class="text-center" style="width: 130px;">In Progress</th>
+                    <th scope="col" class="text-center" style="width: 130px;">Not Started</th>
+                    <th scope="col" class="text-center" style="width: 150px;">Average Age</th>
+                    <th scope="col" class="text-end" style="width: 120px;">Queue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in authority_breakdown %}
+                <tr>
+                    <td>
+                        <strong class="text-dark">{{ item.authority.name }}</strong>
+                        <div class="small text-muted">{{ item.authority.officer_name }} · {{ item.authority.designation }}</div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border px-3 py-2 fs-6">{{ item.assigned }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">{{ item.in_progress }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge {% if item.not_started > 3 %}bg-danger{% else %}bg-secondary{% endif %} px-3 py-2 fs-6">{{ item.not_started }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+                            {{ item.average_age }} days
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'authority_dashboard' %}?authority_id={{ item.authority.id }}" class="btn btn-sm btn-outline-primary">
+                            Inspect
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No authority workload recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
