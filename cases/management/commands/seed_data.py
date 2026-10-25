@@ -1,5 +1,6 @@
 from datetime import timedelta
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 from django.utils import timezone
 from accounts.models import User, UserRole
 from authorities.models import Authority
@@ -13,6 +14,8 @@ class Command(BaseCommand):
     help = "Populate database with comprehensive faculty test data for ITC 3380 presentation"
 
     def handle(self, *args, **options):
+        if not settings.DEBUG:
+            raise CommandError('Demo seeding is only available with DJANGO_DEBUG=true.')
         self.stdout.write("Seeding FMSC test data...")
 
         # 1. Authorities (Section 6, Appendix A)
@@ -57,7 +60,7 @@ class Command(BaseCommand):
                 'email': "dean@mgt.sjp.ac.lk",
                 'phone': "011-2803100",
                 'unit': "Deanery Administration",
-                'is_active': True,
+                'is_active': False,
             }
         )
         dept_it_auth, _ = Authority.objects.get_or_create(
@@ -68,9 +71,12 @@ class Command(BaseCommand):
                 'email': "headit@mgt.sjp.ac.lk",
                 'phone': "011-2803200",
                 'unit': "Academic Department",
-                'is_active': True,
+                'is_active': False,
             }
         )
+        # The Dean's Office is Faculty Management, not an action-taking unit.
+        # Department of IT is academic; infrastructure cases go to the IT Unit.
+        Authority.objects.filter(name__in=["Dean's Office", "Department of Information Technology"]).update(is_active=False)
 
         # 2. Categories (Section 10 & 11)
         cat_class, _ = Category.objects.get_or_create(
@@ -108,9 +114,6 @@ class Command(BaseCommand):
                 reg_or_staff_id="SYS-001",
                 department_or_unit="Faculty IT & Systems"
             )
-        else:
-            admin_user.set_password("password123")
-            admin_user.save()
 
         # Faculty Administrator
         admin_officer, _ = User.objects.get_or_create(
@@ -125,7 +128,9 @@ class Command(BaseCommand):
                 'is_staff': True,
             }
         )
-        admin_officer.set_password("password123")
+        if not admin_officer.has_usable_password() or not admin_officer.password:
+            admin_officer.set_password("password123")
+        admin_officer.is_staff = False
         admin_officer.save()
 
         # Student 1
@@ -141,7 +146,8 @@ class Command(BaseCommand):
                 'contact_number': "077-1234567",
             }
         )
-        student1.set_password("password123")
+        if not student1.has_usable_password() or not student1.password:
+            student1.set_password("password123")
         student1.save()
 
         # Student 2
@@ -157,7 +163,8 @@ class Command(BaseCommand):
                 'contact_number': "071-9876543",
             }
         )
-        student2.set_password("password123")
+        if not student2.has_usable_password() or not student2.password:
+            student2.set_password("password123")
         student2.save()
 
         # Lecturer 1
@@ -173,7 +180,8 @@ class Command(BaseCommand):
                 'contact_number': "077-4455667",
             }
         )
-        lecturer1.set_password("password123")
+        if not lecturer1.has_usable_password() or not lecturer1.password:
+            lecturer1.set_password("password123")
         lecturer1.save()
 
         # Maintenance Authority Officer
@@ -190,7 +198,8 @@ class Command(BaseCommand):
                 'is_staff': True,
             }
         )
-        maint_head.set_password("password123")
+        if not maint_head.has_usable_password() or not maint_head.password:
+            maint_head.set_password("password123")
         maint_head.save()
 
         # IT Authority Officer
@@ -207,8 +216,26 @@ class Command(BaseCommand):
                 'is_staff': True,
             }
         )
-        it_head.set_password("password123")
+        if not it_head.has_usable_password() or not it_head.password:
+            it_head.set_password("password123")
         it_head.save()
+
+        # Examination Authority Officer
+        exam_officer, _ = User.objects.get_or_create(
+            username="exam_officer",
+            defaults={
+                'email': "exam.officer@mgt.sjp.ac.lk",
+                'first_name': "Asanka",
+                'last_name': "Weerasinghe",
+                'role': UserRole.AUTHORITY,
+                'assigned_authority': exam_auth,
+                'reg_or_staff_id': "EXAM-ADMIN-03",
+                'department_or_unit': "Examination Unit",
+            }
+        )
+        if not exam_officer.has_usable_password() or not exam_officer.password:
+            exam_officer.set_password("password123")
+        exam_officer.save()
 
         # Faculty Management / Dean
         dean_user, _ = User.objects.get_or_create(
@@ -223,7 +250,8 @@ class Command(BaseCommand):
                 'is_staff': True,
             }
         )
-        dean_user.set_password("password123")
+        if not dean_user.has_usable_password() or not dean_user.password:
+            dean_user.set_password("password123")
         dean_user.save()
 
         # 4. Realistic Cases matching Proposal examples & Ageing Scenarios

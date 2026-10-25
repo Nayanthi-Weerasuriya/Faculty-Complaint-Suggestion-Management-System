@@ -10,7 +10,7 @@
                 <i class="bi bi-file-earmark-plus-fill fs-4 text-primary me-2"></i>
                 <div>
                     <h5 class="fw-bold mb-0">Submit Complaint / Suggestion</h5>
-                    <small class="text-muted">Wireframe 3: Faculty Case Submission Form</small>
+                    <small class="text-muted">Faculty Case Submission Form</small>
                 </div>
             </div>
             <div class="card-body p-4">
@@ -84,7 +84,7 @@
                             <i class="bi bi-paperclip me-1 text-primary"></i> Supporting Evidence (Optional Attachment)
                         </label>
                         <p class="text-muted small mb-2">Upload images (JPG, PNG, WEBP) or video evidence (MP4, MOV). Maximum file size: 25 MB.</p>
-                        {{ form.attachment_file }}
+                        <p class="small text-muted">Maximum 25 MB. Videos up to 120 seconds. Attach only relevant evidence and avoid unrelated personal information.</p>{{ form.attachment_file }}
                         {% if form.attachment_file.errors %}
                         <div class="text-danger small mt-1">{{ form.attachment_file.errors.0 }}</div>
                         {% endif %}
@@ -104,7 +104,7 @@
 
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4">Cancel</a>
-                        <button type="submit" class="btn btn-primary px-4 fw-semibold" style="background-color: #002b49; border-color: #002b49;">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
                             <i class="bi bi-send-check me-1"></i> Submit Case
                         </button>
                     </div>

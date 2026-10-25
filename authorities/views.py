@@ -9,8 +9,8 @@ from .forms import AuthorityForm
 @login_required
 def authority_list_view(request):
     """View and manage authorities (Acceptance Criterion 15)"""
-    if not request.user.is_admin_user:
-        raise PermissionDenied("Only administrators can manage the authority list.")
+    if not request.user.can_manage_authorities:
+        raise PermissionDenied("Only authorized administrators can manage the authority list.")
 
     authorities = Authority.objects.all().order_by('name')
     return render(request, 'authorities/authority_list.html', {'authorities': authorities})
@@ -18,8 +18,8 @@ def authority_list_view(request):
 
 @login_required
 def authority_create_view(request):
-    if not request.user.is_admin_user:
-        raise PermissionDenied("Only administrators can add authorities.")
+    if not request.user.can_manage_authorities:
+        raise PermissionDenied("Only authorized administrators can add authorities.")
 
     if request.method == 'POST':
         form = AuthorityForm(request.POST)
@@ -35,8 +35,8 @@ def authority_create_view(request):
 
 @login_required
 def authority_update_view(request, pk):
-    if not request.user.is_admin_user:
-        raise PermissionDenied("Only administrators can edit authorities.")
+    if not request.user.can_manage_authorities:
+        raise PermissionDenied("Only authorized administrators can edit authorities.")
 
     authority = get_object_or_404(Authority, pk=pk)
     if request.method == 'POST':
@@ -53,12 +53,35 @@ def authority_update_view(request, pk):
 
 @login_required
 def authority_toggle_active_view(request, pk):
-    if not request.user.is_admin_user:
-        raise PermissionDenied("Only administrators can deactivate authorities.")
+    if not request.user.can_manage_authorities:
+        raise PermissionDenied("Only authorized administrators can deactivate authorities.")
+    if request.method != 'POST':
+        raise PermissionDenied("Changing authority status requires confirmation.")
 
     authority = get_object_or_404(Authority, pk=pk)
     authority.is_active = not authority.is_active
     authority.save()
     status_str = "activated" if authority.is_active else "deactivated"
     messages.info(request, f"Authority '{authority.name}' has been {status_str}.")
+    return redirect('authority_list')
+
+
+@login_required
+def authority_delete_view(request, pk):
+    """Delete an unused authority; preserve historical case and staff links otherwise."""
+    if not request.user.can_manage_authorities:
+        raise PermissionDenied("Only authorized administrators can delete authorities.")
+    if request.method != 'POST':
+        raise PermissionDenied("Authority deletion requires confirmation.")
+
+    authority = get_object_or_404(Authority, pk=pk)
+    if authority.cases.exists() or authority.assigned_staff.exists():
+        messages.error(
+            request,
+            f"'{authority.name}' cannot be deleted because it is linked to cases or staff. Deactivate it instead."
+        )
+    else:
+        authority_name = authority.name
+        authority.delete()
+        messages.success(request, f"Authority '{authority_name}' deleted successfully.")
     return redirect('authority_list')

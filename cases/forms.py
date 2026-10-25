@@ -1,14 +1,10 @@
-import os
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Case, CaseType, CasePriority, CaseStatus, Attachment, AttachmentType, CaseComment, CommentType
-from categories.models import Category
+from .models import Case, CaseStatus, CaseComment
 from authorities.models import Authority
 
 
-ALLOWED_IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp']
-ALLOWED_VIDEO_EXTS = ['.mp4', '.mov', '.avi', '.mkv']
-MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
+from .validators import validate_evidence
 
 
 class CaseSubmissionForm(forms.ModelForm):
@@ -39,6 +35,10 @@ class CaseSubmissionForm(forms.ModelForm):
             'declaration': "I confirm that the information submitted is accurate to the best of my knowledge."
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].queryset = self.fields['category'].queryset.filter(is_active=True)
+
     def clean_declaration(self):
         declaration = self.cleaned_data.get('declaration')
         if not declaration:
@@ -46,14 +46,7 @@ class CaseSubmissionForm(forms.ModelForm):
         return declaration
 
     def clean_attachment_file(self):
-        file = self.cleaned_data.get('attachment_file')
-        if file:
-            ext = os.path.splitext(file.name)[1].lower()
-            if ext not in ALLOWED_IMAGE_EXTS and ext not in ALLOWED_VIDEO_EXTS:
-                raise ValidationError(f"Unsupported file format '{ext}'. Allowed formats: JPG, PNG, WEBP, MP4, MOV.")
-            if file.size > MAX_FILE_SIZE:
-                raise ValidationError(f"File size exceeds 25 MB limit ({file.size / (1024*1024):.1f} MB uploaded).")
-        return file
+        return validate_evidence(self.cleaned_data.get('attachment_file'))
 
 
 class CaseReviewAssignmentForm(forms.ModelForm):
@@ -80,14 +73,19 @@ class CaseReviewAssignmentForm(forms.ModelForm):
             'admin_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Internal instructions for authority or justification if rejecting'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only active action-taking units can receive a case assignment.
+        self.fields['assigned_authority'].queryset = Authority.objects.filter(is_active=True).order_by('name')
+
     def clean(self):
         cleaned_data = super().clean()
         status = cleaned_data.get('status')
         authority = cleaned_data.get('assigned_authority')
         admin_notes = cleaned_data.get('admin_notes')
 
-        if status == CaseStatus.ASSIGNED and not authority:
-            self.add_error('assigned_authority', "Please select a responsible authority to assign this case to.")
+        if status in [CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED] and not authority:
+            self.add_error('assigned_authority', "Please select a responsible authority before accepting or assigning this case.")
 
         if status == CaseStatus.REJECTED and not admin_notes:
             self.add_error('admin_notes', "A rejection reason/note is required when rejecting a case.")
@@ -126,6 +124,9 @@ class CaseProgressUpdateForm(forms.ModelForm):
             'resolution_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Required when marking case as solved: Describe full resolution details.'}),
         }
 
+    def clean_completion_evidence(self):
+        return validate_evidence(self.cleaned_data.get('completion_evidence'))
+
     def clean(self):
         cleaned_data = super().clean()
         status = cleaned_data.get('status')
@@ -135,18 +136,21 @@ class CaseProgressUpdateForm(forms.ModelForm):
         # Acceptance Criterion 17
         if status == CaseStatus.SOLVED:
             if not resolution_notes or not resolution_notes.strip():
-                self.add_error('resolution_notes', "Resolution Note is strictly required when marking a case as solved (Criterion 17).")
+                self.add_error('resolution_notes', "Resolution Note is strictly required when marking a case as solved.")
         elif not progress_comment and not resolution_notes:
             self.add_error('progress_comment', "Please add a progress comment to update the case.")
 
         return cleaned_data
 
 
-class CaseCommentForm(forms.ModelForm):
+class ReporterReplyForm(forms.ModelForm):
+    """A reporting user may only send a clarification/reply, never a progress update."""
     class Meta:
         model = CaseComment
-        fields = ['comment_type', 'comment_text']
+        fields = ['comment_text']
         widgets = {
-            'comment_type': forms.Select(attrs={'class': 'form-select'}),
-            'comment_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Write your comment or update here...'}),
+            'comment_text': forms.Textarea(attrs={
+                'class': 'form-control', 'rows': 3,
+                'placeholder': 'Reply to the case update or provide requested clarification...'
+            }),
         }

@@ -20,30 +20,36 @@
 
     <!-- Quick Action Buttons by Role -->
     <div class="d-flex gap-2">
-        {% if user.is_admin_user %}
-        <a href="{% url 'admin_review_case' case.pk %}" class="btn btn-warning text-dark fw-semibold">
+        {% if user.is_administrator %}
+        {% if case.is_open %}<a href="{% url 'admin_review_case' case.pk %}" class="btn btn-warning text-dark fw-semibold">
             <i class="bi bi-person-check me-1"></i> Admin Review / Assign
-        </a>
+        </a>{% endif %}
         {% if case.status == 'solved' %}
-        <a href="{% url 'admin_close_case' case.pk %}" class="btn btn-dark" onclick="return confirm('Confirm closing this case?');">
-            <i class="bi bi-check-all me-1"></i> Confirm & Close Case
-        </a>
+        <form method="post" action="{% url 'admin_close_case' case.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-dark" onclick="return confirm('Confirm closing this case?');"><i class="bi bi-check-all me-1"></i> Confirm & Close Case</button>
+        </form>
         {% endif %}
         {% endif %}
 
-        {% if user.is_authority_user and user.assigned_authority == case.assigned_authority or user.is_admin_user %}
-        <a href="{% url 'authority_update_case' case.pk %}" class="btn btn-success fw-semibold">
-            <i class="bi bi-arrow-repeat me-1"></i> Update Progress / Solve
-        </a>
-        {% endif %}
+        {% if user == case.submitted_by or user.is_administrator %}{% if case.status == 'solved' or case.status == 'closed' %}
+        <form method="post" action="{% url 'reopen_case' case.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to reopen this case?');"><i class="bi bi-arrow-counterclockwise me-1"></i> Reopen Case</button>
+        </form>
+        {% endif %}{% endif %}
 
-        {% if user == case.submitted_by and case.status == 'solved' %}
-        <a href="{% url 'reopen_case' case.pk %}" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to reopen this case?');">
-            <i class="bi bi-arrow-counterclockwise me-1"></i> Reopen Case
-        </a>
-        {% endif %}
-        
+        {% if user.is_system_administrator %}
+        <a href="/admin/" class="btn btn-outline-secondary">
+        {% elif user.is_administrator %}
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+        {% elif user.is_authority_user %}
+        <a href="{% url 'authority_dashboard' %}" class="btn btn-outline-secondary">
+        {% elif user.role == 'faculty_management' %}
+        <a href="{% url 'management_dashboard' %}" class="btn btn-outline-secondary">
+        {% else %}
         <a href="{% url 'my_cases' %}" class="btn btn-outline-secondary">
+        {% endif %}
             <i class="bi bi-arrow-left me-1"></i> Back
         </a>
     </div>
@@ -56,7 +62,7 @@
         <div class="card border-0 shadow-sm rounded-3 mb-4">
             <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <span class="fw-bold"><i class="bi bi-info-circle me-1 text-primary"></i> Case Overview</span>
-                <span class="badge rounded-pill 
+                <span class="badge rounded-pill
                     {% if case.status == 'submitted' %}bg-info text-dark
                     {% elif case.status == 'under_review' %}bg-primary
                     {% elif case.status == 'assigned' %}bg-secondary
@@ -108,7 +114,7 @@
                     <div class="p-3 bg-light rounded-3 text-secondary" style="white-space: pre-wrap;">{{ case.description }}</div>
                 </div>
 
-                {% if case.admin_notes %}
+                {% if case.admin_notes and show_internal or case.admin_notes and case.status == 'rejected' %}
                 <div class="mb-4 p-3 bg-warning-subtle rounded-3 border border-warning">
                     <h6 class="fw-bold text-dark mb-1"><i class="bi bi-shield-exclamation me-1 text-warning"></i> Administrative Note / Rejection Reason</h6>
                     <p class="mb-0 text-dark small">{{ case.admin_notes }}</p>
@@ -117,7 +123,7 @@
 
                 {% if case.resolution_notes %}
                 <div class="mb-4 p-3 bg-success-subtle rounded-3 border border-success">
-                    <h6 class="fw-bold text-success mb-1"><i class="bi bi-check-circle-fill me-1"></i> Official Resolution Note (Criterion 17)</h6>
+                    <h6 class="fw-bold text-success mb-1"><i class="bi bi-check-circle-fill me-1"></i> Official Resolution Note</h6>
                     <p class="mb-0 text-dark small" style="white-space: pre-wrap;">{{ case.resolution_notes }}</p>
                     {% if case.solved_at %}
                     <small class="text-muted d-block mt-2">Resolved on: {{ case.solved_at|date:"F d, Y · h:i A" }}</small>
@@ -132,12 +138,12 @@
                     <div class="col-md-6">
                         <div class="card border h-100 p-2">
                             {% if att.file_type == 'image' %}
-                            <a href="{{ att.file.url }}" target="_blank">
-                                <img src="{{ att.file.url }}" class="img-fluid rounded mb-2" style="max-height: 200px; width: 100%; object-fit: cover;" alt="Evidence">
+                            <a href="{% url 'attachment' att.pk %}" target="_blank">
+                                <img src="{% url 'attachment' att.pk %}" class="img-fluid rounded mb-2" style="max-height: 200px; width: 100%; object-fit: cover;" alt="Evidence">
                             </a>
                             {% elif att.file_type == 'video' %}
                             <video controls class="w-100 rounded mb-2" style="max-height: 200px;">
-                                <source src="{{ att.file.url }}">
+                                <source src="{% url 'attachment' att.pk %}">
                                 Your browser does not support video playback.
                             </video>
                             {% endif %}
@@ -161,16 +167,19 @@
             </div>
         </div>
 
-        <!-- Comments & Progress Updates Thread -->
+        <!-- Case Updates and Reporter Communication -->
         <div class="card border-0 shadow-sm rounded-3 mb-4">
             <div class="card-header bg-white py-3 border-bottom">
-                <h6 class="fw-bold mb-0"><i class="bi bi-chat-left-text me-2 text-primary"></i> Progress Updates & Communication</h6>
+                <h6 class="fw-bold mb-0"><i class="bi bi-chat-left-text me-2 text-primary"></i>{% if can_reply %}Case Updates & Your Replies{% else %}Case Updates & Communication{% endif %}</h6>
             </div>
             <div class="card-body p-4">
+                {% if can_reply %}
+                <p class="small text-muted">Read updates from the Complaint Coordinator and assigned unit. You may reply with clarification, but only the assigned unit can post progress updates.</p>
+                {% endif %}
                 <div class="mb-4">
-                    {% for comment in case.comments.all %}
+                    {% for comment in comments %}
                     <div class="d-flex mb-3">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 38px; height: 38px; background-color: #0b4570 !important;">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 38px; height: 38px; ">
                             {{ comment.author.first_name|default:comment.author.username|slice:":1"|upper }}
                         </div>
                         <div class="flex-grow-1 p-3 bg-light rounded-3 border">
@@ -183,22 +192,23 @@
                         </div>
                     </div>
                     {% empty %}
-                    <p class="text-muted small fst-italic mb-0">No comments or progress logs recorded yet.</p>
+                    <p class="text-muted small fst-italic mb-0">No case updates or replies recorded yet.</p>
                     {% endfor %}
                 </div>
 
-                <!-- Post Comment Form -->
+                {% if can_reply %}
+                <!-- Reporter reply form -->
                 <form action="{% url 'add_comment' case.pk %}" method="post">
                     {% csrf_token %}
                     <div class="mb-2">
-                        <label class="form-label small fw-semibold">Add Progress Note / Comment</label>
-                        {{ comment_form.comment_type }}
+                        <label class="form-label small fw-semibold">Reply / Provide Clarification</label>
                     </div>
                     <div class="mb-3">
-                        {{ comment_form.comment_text }}
+                        {{ reply_form.comment_text }}
                     </div>
-                    <button type="submit" class="btn btn-outline-primary btn-sm">Post Comment</button>
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Send Reply</button>
                 </form>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -260,7 +270,7 @@
             </div>
         </div>
 
-        <!-- Audit Trail Card (Section 11) -->
+
         <div class="card border-0 shadow-sm rounded-3">
             <div class="card-header bg-white py-3 border-bottom">
                 <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i> Audit Trail History</h6>
@@ -274,7 +284,7 @@
                         <div class="text-muted" style="font-size: 0.75rem;">
                             {{ log.user.username|default:"System" }} · {{ log.timestamp|date:"M d, H:i" }}
                         </div>
-                        {% if log.notes %}
+                        {% if log.notes and show_internal %}
                         <div class="text-secondary mt-1">{{ log.notes|truncatewords:15 }}</div>
                         {% endif %}
                     </div>
