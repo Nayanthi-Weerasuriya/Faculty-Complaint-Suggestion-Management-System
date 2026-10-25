@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block body_class %}auth-page{% endblock %}
+{% block title %}Email verification - FMSC Portal{% endblock %}
+{% block content %}<div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 mx-auto my-4" style="max-width:600px;">
+{% if valid_link %}<h1 class="h3 fw-bold">Verify your university email</h1><p class="text-muted">Confirm your email address to activate your FMSC portal account.</p><form method="post">{% csrf_token %}<button type="submit" class="btn btn-primary">Verify email</button></form>
+{% else %}<h1 class="h3 fw-bold">This link is no longer available</h1><p class="text-muted">It may have expired, already been used, or been replaced by a newer link.</p><a href="{% url 'resend_verification' %}" class="btn btn-primary">Request a new verification link</a><a href="{% url 'login' %}" class="mt-3">Already verified? Sign in</a>{% endif %}
+</div>{% endblock %}

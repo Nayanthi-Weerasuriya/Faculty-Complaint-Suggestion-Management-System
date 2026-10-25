@@ -14,16 +14,14 @@ class FacultyAuthBackend(ModelBackend):
         if not username or not password:
             return None
 
-        try:
-            # Query by username, email, or registration / staff ID
-            user = User.objects.filter(
-                Q(username__iexact=username) |
-                Q(email__iexact=username) |
-                Q(reg_or_staff_id__iexact=username)
-            ).first()
-
-            if user and user.check_password(password) and self.user_can_authenticate(user):
-                return user
-        except Exception:
+        users = User.objects.filter(
+            Q(username__iexact=username) | Q(email__iexact=username) | Q(reg_or_staff_id__iexact=username)
+        )[:2]
+        matches = list(users)
+        if len(matches) != 1:
+            User().set_password(password)
             return None
+        user = matches[0]
+        if user.check_password(password) and self.user_can_authenticate(user):
+            return user
         return None

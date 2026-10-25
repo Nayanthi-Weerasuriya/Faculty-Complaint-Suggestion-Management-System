@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block title %}Complaint Handler Portal - FMSC{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-md-9 col-lg-7">
+        <div class="card auth-card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header auth-heading text-white text-center py-4">
+                <i class="bi bi-tools fs-1 text-warning mb-2 d-inline-block"></i>
+                <h4 class="fw-bold mb-1">Complaint Handler Portal</h4>
+                <p class="mb-0 text-white-50 small">Select your action-taking unit, then sign in with its assigned credentials.</p>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                {% if not selected_unit_name %}
+                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}<h5 class="text-center fw-semibold mb-4">Choose your unit</h5>
+                <div class="row g-3">
+                    {% for key, name in handler_units.items %}
+                    <div class="col-md-4">
+                        <a href="?unit={{ key }}" class="card text-decoration-none h-100 border-primary-subtle text-center p-3">
+                            <i class="bi {% if key == 'it' %}bi-pc-display{% elif key == 'maintenance' %}bi-wrench-adjustable{% else %}bi-journal-check{% endif %} fs-2 text-primary mb-2"></i>
+                            <strong class="text-dark">{{ name }}</strong>
+                            <small class="text-muted mt-1">Open work queue</small>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div><h5 class="fw-bold mb-0">{{ selected_unit_name }}</h5><small class="text-muted">Sign in to view only this unit's assigned cases.</small></div>
+                    <a href="{% url 'complaint_handler_login' %}" class="btn btn-outline-secondary btn-sm">Change Unit</a>
+                </div>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="unit" value="{{ selected_unit }}">
+                    {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>{% endif %}
+                    <div class="mb-3"><label class="form-label fw-medium">Username / Staff ID</label>{{ form.username }}</div>
+                    <div class="mb-4"><label class="form-label fw-medium">Password</label>{{ form.password }}</div>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In to {{ selected_unit_name }}</button>
+                </form>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-light text-center"><a href="{% url 'login' %}" class="small text-decoration-none">Return to main portal login</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

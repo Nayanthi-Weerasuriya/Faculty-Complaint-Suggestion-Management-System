@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth import authenticate
+from django.urls import reverse
 from accounts.models import User, UserRole
+from authorities.models import Authority
 
 
 class AccountsModelAndAuthTests(TestCase):
@@ -41,3 +43,27 @@ class AccountsModelAndAuthTests(TestCase):
         # Login using registration number (Wireframe 1)
         user3 = authenticate(username="FMSC/2026/9999", password="secretpassword")
         self.assertIsNotNone(user3)
+
+
+class ComplaintHandlerLoginTests(TestCase):
+    def setUp(self):
+        self.maintenance = Authority.objects.create(
+            name="Maintenance Division", officer_name="Officer", designation="Engineer", email="maintenance@example.com"
+        )
+        self.handler = User.objects.create_user(
+            username="maintenance_handler", password="secretpassword", role=UserRole.AUTHORITY,
+            assigned_authority=self.maintenance
+        )
+
+    def test_handler_can_sign_in_to_own_selected_unit(self):
+        response = self.client.post(reverse('complaint_handler_login'), {
+            'unit': 'maintenance', 'username': 'maintenance_handler', 'password': 'secretpassword'
+        })
+        self.assertRedirects(response, reverse('authority_dashboard'))
+
+    def test_handler_cannot_sign_in_to_another_unit(self):
+        response = self.client.post(reverse('complaint_handler_login'), {
+            'unit': 'it', 'username': 'maintenance_handler', 'password': 'secretpassword'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Use the credentials assigned to the selected complaint-handling unit.")
