@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% block body_class %}auth-page{% endblock %}
 
 {% block title %}User Profile - FMSC Portal{% endblock %}
 
@@ -11,7 +12,7 @@
             </div>
             <div class="card-body p-4">
                 <div class="mb-4 text-center">
-                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-2" style="width: 72px; height: 72px; font-size: 1.8rem; background-color: #002b49 !important;">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-2" style="width: 72px; height: 72px; font-size: 1.8rem; ">
                         {{ user.first_name|default:user.username|slice:":1"|upper }}
                     </div>
                     <h5 class="fw-bold mb-0">{{ user.get_full_name|default:user.username }}</h5>
@@ -20,6 +21,7 @@
 
                 <form method="post">
                     {% csrf_token %}
+                    {% if form.errors %}<div class="alert alert-danger">{{ form.errors }}</div>{% endif %}
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-medium">First Name</label>
@@ -31,7 +33,7 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-medium">University Email</label>
-                            {{ form.email }}
+                            {{ form.email }}<div class="form-text">{{ form.email.help_text }}</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Registration No. / Staff ID</label>
@@ -48,7 +50,7 @@
                     </div>
                     <div class="mt-4 text-end">
                         <a href="{% url 'home' %}" class="btn btn-outline-secondary me-2">Back to Home</a>
-                        <button type="submit" class="btn btn-primary px-4" style="background-color: #002b49;">Save Profile</button>
+                        <button type="submit" class="btn btn-primary px-4">Save Profile</button>
                     </div>
                 </form>
             </div>

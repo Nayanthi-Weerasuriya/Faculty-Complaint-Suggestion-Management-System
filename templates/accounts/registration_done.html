@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block body_class %}auth-page{% endblock %}
+{% block title %}Verify your email - FMSC Portal{% endblock %}
+{% block content %}<div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 mx-auto my-4" style="max-width:640px;">
+<i class="bi bi-envelope-check text-primary fs-1 mb-3" aria-hidden="true"></i>
+{% if local_verification_url %}
+<h1 class="h3 fw-bold">Finish your demo registration</h1>
+<p class="text-muted">Email delivery is simulated for this local demonstration. Use the link below to verify the account you just created, then sign in with your email and password.</p>
+<div class="alert alert-info my-3">
+<strong class="d-block mb-2">Temporary verification</strong>
+<p class="small mb-3">No email will arrive in your inbox. Open this link and choose <strong>Verify email</strong> to continue.</p>
+<a class="btn btn-primary" href="{{ local_verification_url }}" rel="noreferrer">Open verification link <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i></a>
+</div>
+<p class="small text-muted">This option is available only during local demonstrations. The link expires after 24 hours and can be used once.</p>
+{% else %}
+<h1 class="h3 fw-bold">Check your university email</h1>
+<p class="text-muted">Your account must be verified before you can sign in. Open the verification link in your email and choose Verify email. The link expires after 24 hours.</p>
+<p class="small text-muted">Check your spam folder too. If no email arrives, request another link or contact faculty support.</p>
+{% endif %}
+<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'login' %}">Go to sign in</a><a class="btn btn-outline-secondary" href="{% url 'resend_verification' %}">Resend verification email</a></div>
+</div>{% endblock %}
