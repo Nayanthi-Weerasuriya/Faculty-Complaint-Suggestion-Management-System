@@ -13,70 +13,132 @@ from authorities.models import Authority
 @login_required
 def admin_dashboard_view(request):
     """
-    Renders Wireframe 4: Admin Dashboard.
-    Provides operational metrics, multi-faceted filtering,
-    and the Not Started Age Report table.
+    Renders Unified Admin Dashboard & Case Operations Center.
+    Provides operational metrics, responsive filtering, age calculation,
+    and departmental performance breakdown.
     """
     if not (request.user.is_admin_user or request.user.is_management_user):
         raise PermissionDenied("Access restricted to administrators and management.")
 
-    cases = Case.objects.all()
+    all_cases_qs = Case.objects.all()
 
-    # Filters
-    date_from = request.GET.get('date_from')
-    date_to = request.GET.get('date_to')
-    category_id = request.GET.get('category')
-    authority_id = request.GET.get('authority')
-    priority = request.GET.get('priority')
-    status = request.GET.get('status')
+    # Fixed Global KPI counts (always reflects entire faculty status)
+    total_count = all_cases_qs.count()
+    attempted_count = all_cases_qs.filter(status__in=[
+        CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED,
+        CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO, CaseStatus.SOLVED,
+        CaseStatus.CLOSED, CaseStatus.REOPENED
+    ]).count()
+    not_attempted_count = all_cases_qs.filter(status=CaseStatus.SUBMITTED).count()
+    not_started_count = all_cases_qs.filter(status__in=[
+        CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED
+    ]).count()
+    urgent_count = all_cases_qs.filter(priority=CasePriority.URGENT).count()
+    solved_count = all_cases_qs.filter(status__in=[CaseStatus.SOLVED, CaseStatus.CLOSED]).count()
 
+    # Queryset for display table
+    cases = all_cases_qs
+
+    q = request.GET.get('q', '').strip()
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+    category_id = request.GET.get('category', '').strip()
+    authority_id = request.GET.get('authority', '').strip()
+    priority = request.GET.get('priority', '').strip()
+    status = request.GET.get('status', '').strip().lower()
+
+    filter_label = "All Faculty Cases"
+
+    # Search keyword
+    if q:
+        cases = cases.filter(
+            Q(case_number__icontains=q) |
+            Q(title__icontains=q) |
+            Q(location__icontains=q) |
+            Q(description__icontains=q) |
+            Q(submitted_by__username__icontains=q) |
+            Q(submitted_by__reg_or_staff_id__icontains=q)
+        )
+        filter_label = f"Search: '{q}'"
+
+    # Date range filters
     if date_from:
         cases = cases.filter(submitted_at__date__gte=date_from)
     if date_to:
         cases = cases.filter(submitted_at__date__lte=date_to)
+
+    # Category filter
     if category_id:
         cases = cases.filter(category_id=category_id)
+
+    # Authority filter
     if authority_id:
         cases = cases.filter(assigned_authority_id=authority_id)
+
+    # Priority filter
     if priority:
         cases = cases.filter(priority=priority)
+        filter_label = f"Priority: {priority.capitalize()}"
+
+    # Status filter logic from clicking KPI cards or dropdown
     if status == 'attempted':
         cases = cases.filter(status__in=[
             CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED,
             CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO, CaseStatus.SOLVED,
             CaseStatus.CLOSED, CaseStatus.REOPENED
         ])
+        filter_label = "Attempted Cases (Reviewed & Active)"
+    elif status == 'not_attempted' or status == 'submitted':
+        cases = cases.filter(status=CaseStatus.SUBMITTED)
+        filter_label = "Not Attempted Cases (Submitted, Awaiting Review)"
     elif status == 'not_started':
         cases = cases.filter(status__in=[
             CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED
         ])
-    elif status:
+        filter_label = "Not Started Cases (Age Report)"
+    elif status == 'urgent':
+        cases = cases.filter(priority=CasePriority.URGENT)
+        filter_label = "Urgent Priority Cases"
+    elif status == 'solved':
+        cases = cases.filter(status__in=[CaseStatus.SOLVED, CaseStatus.CLOSED])
+        filter_label = "Solved & Closed Cases"
+    elif status and status != 'all':
         cases = cases.filter(status=status)
+        filter_label = f"Status: {status.replace('_', ' ').capitalize()}"
 
-    total_cases = cases.count()
-    attempted_cases = cases.filter(status__in=[
-        CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED,
-        CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO, CaseStatus.SOLVED,
-        CaseStatus.CLOSED, CaseStatus.REOPENED
-    ]).count()
-    not_attempted_cases = cases.filter(status=CaseStatus.SUBMITTED).count()
-    not_started_cases = cases.filter(status__in=[
-        CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED
-    ]).count()
-    urgent_cases = cases.filter(priority=CasePriority.URGENT).count()
+    # Ordered table cases (urgent and oldest first)
+    table_cases = cases.order_by('-priority', 'submitted_at')
 
-    # Not Started Age Report Table (Wireframe 4)
-    not_started_list = cases.filter(
-        status__in=[CaseStatus.SUBMITTED, CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED]
-    ).order_by('submitted_at')
+    # Authority performance breakdown
+    authorities = Authority.objects.filter(is_active=True)
+    authority_breakdown = []
+    for auth in authorities:
+        auth_cases = all_cases_qs.filter(assigned_authority=auth)
+        assigned_c = auth_cases.count()
+        in_prog_c = auth_cases.filter(status=CaseStatus.IN_PROGRESS).count()
+        not_started_c = auth_cases.filter(status__in=[CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED]).count()
+        pending_cases = auth_cases.filter(status__in=[
+            CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED, CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO
+        ])
+        pending_ages = [c.age_days for c in pending_cases]
+        avg_age = round(sum(pending_ages) / len(pending_ages), 1) if pending_ages else 0
+
+        authority_breakdown.append({
+            'authority': auth,
+            'assigned': assigned_c,
+            'in_progress': in_prog_c,
+            'not_started': not_started_c,
+            'average_age': avg_age,
+        })
 
     context = {
-        'total_cases': total_cases,
-        'attempted_cases': attempted_cases,
-        'not_attempted_cases': not_attempted_cases,
-        'not_started_cases': not_started_cases,
-        'urgent_cases': urgent_cases,
-        'not_started_list': not_started_list,
+        'total_cases': total_count,
+        'attempted_cases': attempted_count,
+        'not_attempted_cases': not_attempted_count,
+        'not_started_cases': not_started_count,
+        'urgent_cases': urgent_count,
+        'solved_cases': solved_count,
+        'table_cases': table_cases,
         'categories': Category.objects.filter(is_active=True),
         'authorities': Authority.objects.filter(is_active=True),
         'priorities': CasePriority.choices,
@@ -85,8 +147,11 @@ def admin_dashboard_view(request):
         'selected_authority': authority_id,
         'selected_priority': priority,
         'selected_status': status,
+        'search_query': q,
         'date_from': date_from,
         'date_to': date_to,
+        'filter_label': filter_label,
+        'authority_breakdown': authority_breakdown,
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
 

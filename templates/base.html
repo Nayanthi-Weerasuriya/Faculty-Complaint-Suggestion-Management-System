@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -108,7 +108,7 @@
                 <i class="bi bi-shield-check me-2 fs-4 text-warning"></i>
                 <div>
                     <span class="d-block lh-1 fs-5">FMSC Complaint & Suggestion Portal</span>
-                    <small class="text-white-50" style="font-size: 0.72rem;">Faculty of Management Studies & Commerce · USJ</small>
+                    <small class="text-white-50" style="font-size: 0.72rem;">Faculty of Management Studies & Commerce Â· USJ</small>
                 </div>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#facultyNavbar" aria-controls="facultyNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -124,30 +124,50 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'submit_case' %}"><i class="bi bi-plus-circle me-1"></i> Submit Case</a>
                     </li>
+
+                    {% if user.is_admin_user %}
+                    <!-- Clean Focused Administrator Navigation -->
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-semibold" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my_cases' %}"><i class="bi bi-folder2-open me-1"></i> Cases Directory</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white-50" href="#" id="adminTools" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-sliders me-1"></i> Management Tools
+                        </a>
+                        <ul class="dropdown-menu shadow" aria-labelledby="adminTools">
+                            <li><a class="dropdown-item" href="{% url 'authority_list' %}"><i class="bi bi-diagram-3 me-2 text-primary"></i> Manage Authorities (CRUD)</a></li>
+                            <li><a class="dropdown-item" href="{% url 'authority_dashboard' %}"><i class="bi bi-tools me-2 text-warning"></i> Authority Work Queue Preview</a></li>
+                            <li><a class="dropdown-item" href="{% url 'management_dashboard' %}"><i class="bi bi-graph-up me-2 text-success"></i> Executive Governance Analytics</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-secondary small" href="/admin/" target="_blank"><i class="bi bi-gear me-2"></i> Django System Settings</a></li>
+                        </ul>
+                    </li>
+
+                    {% elif user.is_authority_user %}
+                    <!-- Relevant Authority Navigation -->
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-semibold" href="{% url 'authority_dashboard' %}"><i class="bi bi-tools me-1"></i> Department Work Queue</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'my_cases' %}"><i class="bi bi-folder2-open me-1"></i> My Cases</a>
                     </li>
-                    {% if user.is_admin_user or user.is_management_user %}
+
+                    {% elif user.is_management_user %}
+                    <!-- Faculty Management (Dean) -->
                     <li class="nav-item">
-                        <a class="nav-link text-warning" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Admin Dashboard</a>
-                    </li>
-                    {% endif %}
-                    {% if user.is_authority_user or user.is_admin_user %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'authority_dashboard' %}"><i class="bi bi-tools me-1"></i> Authority Queue</a>
-                    </li>
-                    {% endif %}
-                    {% if user.is_management_user or user.is_admin_user %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'management_dashboard' %}"><i class="bi bi-graph-up me-1"></i> Management View</a>
-                    </li>
-                    {% endif %}
-                    {% if user.is_admin_user %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'authority_list' %}"><i class="bi bi-diagram-3 me-1"></i> Authorities</a>
+                        <a class="nav-link text-warning fw-semibold" href="{% url 'management_dashboard' %}"><i class="bi bi-graph-up me-1"></i> Executive Analytics</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin/" target="_blank"><i class="bi bi-gear me-1"></i> Django Admin</a>
+                        <a class="nav-link" href="{% url 'my_cases' %}"><i class="bi bi-folder2-open me-1"></i> All Cases</a>
+                    </li>
+
+                    {% else %}
+                    <!-- Students & Lecturers -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my_cases' %}"><i class="bi bi-folder2-open me-1"></i> My Cases</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -242,7 +262,7 @@
         <div class="container-fluid px-lg-4 d-flex flex-wrap justify-content-between align-items-center">
             <div>
                 <strong>Faculty Complaint & Suggestion Management System</strong> | University of Sri Jayewardenepura
-                <br><small class="text-secondary">Course ITC 3380 · Designed for Dr. Ranil Peiris's Proposal · Version 1.0</small>
+                <br><small class="text-secondary">Course ITC 3380 Â· Designed for Dr. Ranil Peiris's Proposal Â· Version 1.0</small>
             </div>
             <div class="small text-end mt-2 mt-sm-0">
                 <span>Secure Digital Governance Portal</span>
