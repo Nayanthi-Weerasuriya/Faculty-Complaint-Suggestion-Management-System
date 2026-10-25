@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}Admin Dashboard & Ageing Reports - FMSC Portal{% endblock %}
 
@@ -18,42 +18,52 @@
     </div>
 </div>
 
-<!-- Wireframe 4: Operational Indicator Cards -->
+<!-- Wireframe 4: Clickable Operational Indicator Cards -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-lg">
-        <div class="card card-stat bg-white p-3 border-top border-4 border-primary">
-            <div class="text-uppercase text-muted small fw-semibold">Total Cases</div>
-            <div class="fs-2 fw-bold text-dark">{{ total_cases }}</div>
-            <small class="text-muted">All submissions</small>
-        </div>
+        <a href="{% url 'admin_dashboard' %}?status=" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-top border-4 border-primary h-100 {% if not selected_status and not selected_priority %}shadow-sm border-3 bg-light{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">Total Cases</div>
+                <div class="fs-2 fw-bold text-dark">{{ total_cases }}</div>
+                <small class="text-muted">Click to view all</small>
+            </div>
+        </a>
     </div>
     <div class="col-sm-6 col-lg">
-        <div class="card card-stat bg-white p-3 border-top border-4 border-info">
-            <div class="text-uppercase text-muted small fw-semibold">Attempted Cases</div>
-            <div class="fs-2 fw-bold text-info">{{ attempted_cases }}</div>
-            <small class="text-muted">Reviewed, assigned, active</small>
-        </div>
+        <a href="{% url 'admin_dashboard' %}?status=attempted" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-top border-4 border-info h-100 {% if selected_status == 'attempted' %}shadow border-3 border-info bg-info-subtle{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">Attempted Cases {% if selected_status == 'attempted' %}<span class="badge bg-info text-dark ms-1">Active</span>{% endif %}</div>
+                <div class="fs-2 fw-bold text-info">{{ attempted_cases }}</div>
+                <small class="text-muted">Reviewed & active</small>
+            </div>
+        </a>
     </div>
     <div class="col-sm-6 col-lg">
-        <div class="card card-stat bg-white p-3 border-top border-4 border-secondary">
-            <div class="text-uppercase text-muted small fw-semibold">Not Attempted</div>
-            <div class="fs-2 fw-bold text-secondary">{{ not_attempted_cases }}</div>
-            <small class="text-muted">Submitted, awaiting review</small>
-        </div>
+        <a href="{% url 'admin_dashboard' %}?status=submitted" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-top border-4 border-secondary h-100 {% if selected_status == 'submitted' %}shadow border-3 border-secondary bg-light{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">Not Attempted {% if selected_status == 'submitted' %}<span class="badge bg-secondary text-white ms-1">Active</span>{% endif %}</div>
+                <div class="fs-2 fw-bold text-secondary">{{ not_attempted_cases }}</div>
+                <small class="text-muted">Awaiting review</small>
+            </div>
+        </a>
     </div>
     <div class="col-sm-6 col-lg">
-        <div class="card card-stat bg-white p-3 border-top border-4 border-warning">
-            <div class="text-uppercase text-muted small fw-semibold">Not Started</div>
-            <div class="fs-2 fw-bold text-warning">{{ not_started_cases }}</div>
-            <small class="text-muted">Accepted, no action yet</small>
-        </div>
+        <a href="{% url 'admin_dashboard' %}?status=not_started" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-top border-4 border-warning h-100 {% if selected_status == 'not_started' %}shadow border-3 border-warning bg-warning-subtle{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">Not Started {% if selected_status == 'not_started' %}<span class="badge bg-warning text-dark ms-1">Active</span>{% endif %}</div>
+                <div class="fs-2 fw-bold text-warning">{{ not_started_cases }}</div>
+                <small class="text-muted">No action yet</small>
+            </div>
+        </a>
     </div>
     <div class="col-sm-6 col-lg">
-        <div class="card card-stat bg-white p-3 border-top border-4 border-danger">
-            <div class="text-uppercase text-muted small fw-semibold">Urgent Cases</div>
-            <div class="fs-2 fw-bold text-danger">{{ urgent_cases }}</div>
-            <small class="text-muted">High priority attention</small>
-        </div>
+        <a href="{% url 'admin_dashboard' %}?priority=urgent" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-top border-4 border-danger h-100 {% if selected_priority == 'urgent' %}shadow border-3 border-danger bg-danger-subtle{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">Urgent Cases {% if selected_priority == 'urgent' %}<span class="badge bg-danger text-white ms-1">Active</span>{% endif %}</div>
+                <div class="fs-2 fw-bold text-danger">{{ urgent_cases }}</div>
+                <small class="text-muted">High priority</small>
+            </div>
+        </a>
     </div>
 </div>
 
@@ -141,7 +151,7 @@
                     </td>
                     <td>
                         <div class="fw-semibold text-dark">{{ case.title }}</div>
-                        <small class="text-muted">{{ case.category.name }} · {{ case.location }}</small>
+                        <small class="text-muted">{{ case.category.name }} Â· {{ case.location }}</small>
                     </td>
                     <td>
                         <span class="badge {% if case.priority == 'urgent' %}priority-urgent{% else %}priority-normal{% endif %}">

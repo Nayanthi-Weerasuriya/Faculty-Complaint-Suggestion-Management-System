@@ -1,4 +1,4 @@
-from datetime import timedelta
+﻿from datetime import timedelta
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -40,7 +40,17 @@ def admin_dashboard_view(request):
         cases = cases.filter(assigned_authority_id=authority_id)
     if priority:
         cases = cases.filter(priority=priority)
-    if status:
+    if status == 'attempted':
+        cases = cases.filter(status__in=[
+            CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED,
+            CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO, CaseStatus.SOLVED,
+            CaseStatus.CLOSED, CaseStatus.REOPENED
+        ])
+    elif status == 'not_started':
+        cases = cases.filter(status__in=[
+            CaseStatus.UNDER_REVIEW, CaseStatus.NOT_STARTED, CaseStatus.ASSIGNED
+        ])
+    elif status:
         cases = cases.filter(status=status)
 
     total_cases = cases.count()
@@ -114,9 +124,32 @@ def authority_dashboard_view(request):
         solved_at__gte=first_of_month
     ).count()
 
-    active_work_queue = cases_qs.filter(
-        status__in=[CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED, CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO]
-    ).order_by('-priority', 'submitted_at')
+    # Dynamic filter parameter via clicking indicator cards
+    filter_param = request.GET.get('filter', '').strip().lower()
+
+    if filter_param == 'urgent':
+        active_work_queue = cases_qs.filter(priority=CasePriority.URGENT)
+        queue_label = "Urgent Cases"
+    elif filter_param == 'in_progress':
+        active_work_queue = cases_qs.filter(status=CaseStatus.IN_PROGRESS)
+        queue_label = "In Progress Cases"
+    elif filter_param == 'solved_month':
+        active_work_queue = cases_qs.filter(
+            status__in=[CaseStatus.SOLVED, CaseStatus.CLOSED],
+            solved_at__gte=first_of_month
+        )
+        queue_label = "Solved Cases (This Month)"
+    elif filter_param == 'assigned':
+        active_work_queue = cases_qs
+        queue_label = "All Assigned Cases"
+    else:
+        filter_param = 'active'
+        active_work_queue = cases_qs.filter(
+            status__in=[CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED, CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO]
+        )
+        queue_label = "Active Work Queue (Pending Action)"
+
+    active_work_queue = active_work_queue.order_by('-priority', 'submitted_at')
 
     context = {
         'authority': authority,
@@ -125,6 +158,8 @@ def authority_dashboard_view(request):
         'in_progress_count': in_progress_count,
         'solved_this_month': solved_this_month,
         'work_queue': active_work_queue,
+        'current_filter': filter_param,
+        'queue_label': queue_label,
         'all_authorities': Authority.objects.filter(is_active=True) if user.is_admin_user else None,
     }
     return render(request, 'dashboard/authority_dashboard.html', context)

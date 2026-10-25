@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}Authority Work Queue - FMSC Portal{% endblock %}
 
@@ -24,45 +24,79 @@
     {% endif %}
 </div>
 
-<!-- Wireframe 6: Authority Operational Indicators -->
+<!-- Wireframe 6: Clickable Authority Operational Indicators -->
 <div class="row g-3 mb-4">
+    <!-- Assigned Cases -->
     <div class="col-sm-6 col-md-3">
-        <div class="card card-stat bg-white p-3 border-start border-4 border-primary">
-            <div class="text-uppercase text-muted small fw-semibold">Assigned Cases</div>
-            <div class="fs-2 fw-bold text-primary">{{ assigned_count }}</div>
-            <small class="text-muted">Total allocated to this unit</small>
-        </div>
+        <a href="?{% if authority %}authority_id={{ authority.id }}&{% endif %}filter=assigned" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-start border-4 border-primary h-100 {% if current_filter == 'assigned' %}shadow border-3 border-primary bg-primary-subtle{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">
+                    Assigned Cases
+                    {% if current_filter == 'assigned' %}<span class="badge bg-primary text-white ms-1">Active</span>{% endif %}
+                </div>
+                <div class="fs-2 fw-bold text-primary">{{ assigned_count }}</div>
+                <small class="text-muted">Total allocated to this unit</small>
+            </div>
+        </a>
     </div>
+
+    <!-- Urgent Cases -->
     <div class="col-sm-6 col-md-3">
-        <div class="card card-stat bg-white p-3 border-start border-4 border-danger">
-            <div class="text-uppercase text-muted small fw-semibold">Urgent Cases</div>
-            <div class="fs-2 fw-bold text-danger">{{ urgent_count }}</div>
-            <small class="text-muted">Immediate action required</small>
-        </div>
+        <a href="?{% if authority %}authority_id={{ authority.id }}&{% endif %}filter=urgent" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-start border-4 border-danger h-100 {% if current_filter == 'urgent' %}shadow border-3 border-danger bg-danger-subtle{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">
+                    Urgent Cases
+                    {% if current_filter == 'urgent' %}<span class="badge bg-danger text-white ms-1">Active</span>{% endif %}
+                </div>
+                <div class="fs-2 fw-bold text-danger">{{ urgent_count }}</div>
+                <small class="text-muted">Immediate action required</small>
+            </div>
+        </a>
     </div>
+
+    <!-- In Progress Cases -->
     <div class="col-sm-6 col-md-3">
-        <div class="card card-stat bg-white p-3 border-start border-4 border-warning">
-            <div class="text-uppercase text-muted small fw-semibold">In Progress</div>
-            <div class="fs-2 fw-bold text-warning">{{ in_progress_count }}</div>
-            <small class="text-muted">Currently being addressed</small>
-        </div>
+        <a href="?{% if authority %}authority_id={{ authority.id }}&{% endif %}filter=in_progress" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-start border-4 border-warning h-100 {% if current_filter == 'in_progress' %}shadow border-3 border-warning bg-warning-subtle{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">
+                    In Progress
+                    {% if current_filter == 'in_progress' %}<span class="badge bg-warning text-dark ms-1">Active</span>{% endif %}
+                </div>
+                <div class="fs-2 fw-bold text-warning">{{ in_progress_count }}</div>
+                <small class="text-muted">Currently being addressed</small>
+            </div>
+        </a>
     </div>
+
+    <!-- Solved This Month -->
     <div class="col-sm-6 col-md-3">
-        <div class="card card-stat bg-white p-3 border-start border-4 border-success">
-            <div class="text-uppercase text-muted small fw-semibold">Solved This Month</div>
-            <div class="fs-2 fw-bold text-success">{{ solved_this_month }}</div>
-            <small class="text-muted">Successfully closed cases</small>
-        </div>
+        <a href="?{% if authority %}authority_id={{ authority.id }}&{% endif %}filter=solved_month" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-start border-4 border-success h-100 {% if current_filter == 'solved_month' %}shadow border-3 border-success bg-success-subtle{% endif %}" style="cursor: pointer;">
+                <div class="text-uppercase text-muted small fw-semibold">
+                    Solved This Month
+                    {% if current_filter == 'solved_month' %}<span class="badge bg-success text-white ms-1">Active</span>{% endif %}
+                </div>
+                <div class="fs-2 fw-bold text-success">{{ solved_this_month }}</div>
+                <small class="text-muted">Successfully closed cases</small>
+            </div>
+        </a>
     </div>
 </div>
 
 <!-- Wireframe 6: My Assigned Cases Work Queue Table -->
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold mb-0 text-dark">
-            <i class="bi bi-list-task me-2 text-primary"></i> Active Work Queue (Pending Action)
-        </h5>
-        <span class="badge bg-secondary">{{ work_queue|length }} Cases Pending</span>
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-list-task me-2 text-primary"></i> {{ queue_label }}
+            </h5>
+            <span class="badge bg-secondary">{{ work_queue|length }} Cases</span>
+        </div>
+        {% if current_filter != 'active' %}
+        <a href="?{% if authority %}authority_id={{ authority.id }}{% endif %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset to Active Queue
+        </a>
+        {% endif %}
     </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -94,6 +128,8 @@
                             {% if case.status == 'in_progress' %}bg-warning text-dark
                             {% elif case.status == 'waiting_for_info' %}bg-secondary
                             {% elif case.status == 'assigned' %}bg-info text-dark
+                            {% elif case.status == 'solved' %}bg-success
+                            {% elif case.status == 'closed' %}bg-dark
                             {% else %}bg-light text-dark border{% endif %}">
                             {{ case.get_status_display }}
                         </span>
@@ -118,7 +154,7 @@
                 <tr>
                     <td colspan="6" class="text-center py-5 text-muted">
                         <i class="bi bi-check2-all fs-1 d-block mb-2 text-success"></i>
-                        No pending cases in this authority's work queue. All clear!
+                        No cases found under <strong>{{ queue_label }}</strong>.
                     </td>
                 </tr>
                 {% endfor %}

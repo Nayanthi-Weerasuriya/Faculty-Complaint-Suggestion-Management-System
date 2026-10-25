@@ -1,4 +1,4 @@
-import os
+﻿import os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -18,29 +18,54 @@ def home_view(request):
     """
     Renders Wireframe 2: Student / Lecturer Home Screen.
     Displays summary indicators (Submitted, In Progress, Solved),
-    quick actions, and recent cases.
+    and filters cases dynamically when clicking on any status card.
     """
     user = request.user
     
-    # If Admin or Authority or Management, provide quick routing or full view
+    # Base queryset according to role
     if user.is_admin_user:
-        user_cases = Case.objects.all()
+        base_cases = Case.objects.all()
     elif user.is_authority_user and user.assigned_authority:
-        user_cases = Case.objects.filter(assigned_authority=user.assigned_authority)
+        base_cases = Case.objects.filter(assigned_authority=user.assigned_authority)
     else:
-        user_cases = Case.objects.filter(submitted_by=user)
+        base_cases = Case.objects.filter(submitted_by=user)
 
-    submitted_count = user_cases.filter(status=CaseStatus.SUBMITTED).count()
-    in_progress_count = user_cases.filter(status__in=[CaseStatus.IN_PROGRESS, CaseStatus.ASSIGNED, CaseStatus.UNDER_REVIEW]).count()
-    solved_count = user_cases.filter(status__in=[CaseStatus.SOLVED, CaseStatus.CLOSED]).count()
+    submitted_count = base_cases.filter(status=CaseStatus.SUBMITTED).count()
+    in_progress_count = base_cases.filter(
+        status__in=[CaseStatus.IN_PROGRESS, CaseStatus.ASSIGNED, CaseStatus.UNDER_REVIEW, CaseStatus.WAITING_FOR_INFO]
+    ).count()
+    solved_count = base_cases.filter(status__in=[CaseStatus.SOLVED, CaseStatus.CLOSED]).count()
+    total_count = base_cases.count()
 
-    recent_cases = user_cases.order_by('-submitted_at')[:8]
+    # Dynamic filter via clicking the analytic cards
+    status_filter = request.GET.get('status', 'all').strip().lower()
+
+    if status_filter == 'submitted':
+        filtered_cases = base_cases.filter(status=CaseStatus.SUBMITTED)
+        filter_label = "Submitted Cases"
+    elif status_filter == 'in_progress':
+        filtered_cases = base_cases.filter(
+            status__in=[CaseStatus.IN_PROGRESS, CaseStatus.ASSIGNED, CaseStatus.UNDER_REVIEW, CaseStatus.WAITING_FOR_INFO]
+        )
+        filter_label = "In Progress Cases"
+    elif status_filter == 'solved':
+        filtered_cases = base_cases.filter(status__in=[CaseStatus.SOLVED, CaseStatus.CLOSED])
+        filter_label = "Solved Cases"
+    else:
+        filtered_cases = base_cases
+        status_filter = 'all'
+        filter_label = "All Recent Cases"
+
+    recent_cases = filtered_cases.order_by('-submitted_at')[:25]
 
     context = {
         'submitted_count': submitted_count,
         'in_progress_count': in_progress_count,
         'solved_count': solved_count,
+        'total_count': total_count,
         'recent_cases': recent_cases,
+        'current_filter': status_filter,
+        'filter_label': filter_label,
     }
     return render(request, 'cases/home.html', context)
 

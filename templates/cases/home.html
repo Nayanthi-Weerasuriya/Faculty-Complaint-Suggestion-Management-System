@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}Home - FMSC Complaint & Suggestion App{% endblock %}
 
 {% block content %}
-<!-- Welcome & Quick Action Bar (Wireframe 2) -->
+<!-- Welcome Banner (Clean, without redundant buttons) -->
 <div class="row align-items-center mb-4">
-    <div class="col-md-7">
+    <div class="col-12">
         <h3 class="fw-bold text-dark mb-1">
             Welcome, {{ user.first_name|default:user.username }}
         </h3>
@@ -13,72 +13,115 @@
             FMSC Complaint & Suggestion Management Portal · {{ user.department_or_unit|default:"Faculty Community" }}
         </p>
     </div>
-    <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex flex-wrap gap-2 justify-content-md-end">
-        <a href="{% url 'submit_case' %}" class="btn btn-primary fw-medium" style="background-color: #002b49; border-color: #002b49;">
-            <i class="bi bi-plus-circle me-1"></i> Submit New Complaint / Suggestion
-        </a>
-        <a href="{% url 'my_cases' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-folder2 me-1"></i> My Cases
-        </a>
-        <a href="{% url 'notification_list' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-bell me-1"></i> Notifications
-        </a>
-    </div>
 </div>
 
-<!-- My Case Summary Cards (Wireframe 2) -->
+<!-- Interactive Analytic Cards (Clickable Filters) -->
 <div class="row g-3 mb-4">
+    <!-- Submitted Cases Card -->
     <div class="col-sm-4">
-        <div class="card card-stat bg-white p-3 border-start border-4 border-info">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-uppercase text-muted small fw-semibold">Submitted Cases</div>
-                    <div class="fs-2 fw-bold text-info">{{ submitted_count|stringformat:"02d" }}</div>
+        <a href="{% if current_filter == 'submitted' %}?status=all{% else %}?status=submitted{% endif %}" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-start border-4 border-info h-100 {% if current_filter == 'submitted' %}shadow border-3 border-info bg-info-subtle{% endif %}" style="cursor: pointer; transition: all 0.2s ease;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-uppercase text-muted small fw-semibold">
+                            Submitted Cases
+                            {% if current_filter == 'submitted' %}
+                            <span class="badge bg-info text-dark ms-1">Active Filter</span>
+                            {% endif %}
+                        </div>
+                        <div class="fs-2 fw-bold text-info">{{ submitted_count|stringformat:"02d" }}</div>
+                    </div>
+                    <div class="rounded-circle bg-info-subtle p-3 text-info">
+                        <i class="bi bi-send fs-4"></i>
+                    </div>
                 </div>
-                <div class="rounded-circle bg-info-subtle p-3 text-info">
-                    <i class="bi bi-send fs-4"></i>
-                </div>
+                <small class="text-muted mt-2 d-block">
+                    {% if current_filter == 'submitted' %}
+                    <i class="bi bi-check2-circle text-info me-1"></i> Showing submitted cases · Click to reset
+                    {% else %}
+                    <i class="bi bi-funnel text-muted me-1"></i> Click to filter submitted cases
+                    {% endif %}
+                </small>
             </div>
-            <small class="text-muted mt-2 d-block">Awaiting administrative review</small>
-        </div>
+        </a>
     </div>
+
+    <!-- In Progress Cases Card -->
     <div class="col-sm-4">
-        <div class="card card-stat bg-white p-3 border-start border-4 border-warning">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-uppercase text-muted small fw-semibold">In Progress Cases</div>
-                    <div class="fs-2 fw-bold text-warning">{{ in_progress_count|stringformat:"02d" }}</div>
+        <a href="{% if current_filter == 'in_progress' %}?status=all{% else %}?status=in_progress{% endif %}" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-start border-4 border-warning h-100 {% if current_filter == 'in_progress' %}shadow border-3 border-warning bg-warning-subtle{% endif %}" style="cursor: pointer; transition: all 0.2s ease;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-uppercase text-muted small fw-semibold">
+                            In Progress Cases
+                            {% if current_filter == 'in_progress' %}
+                            <span class="badge bg-warning text-dark ms-1">Active Filter</span>
+                            {% endif %}
+                        </div>
+                        <div class="fs-2 fw-bold text-warning">{{ in_progress_count|stringformat:"02d" }}</div>
+                    </div>
+                    <div class="rounded-circle bg-warning-subtle p-3 text-warning">
+                        <i class="bi bi-gear-wide-connected fs-4"></i>
+                    </div>
                 </div>
-                <div class="rounded-circle bg-warning-subtle p-3 text-warning">
-                    <i class="bi bi-gear-wide-connected fs-4"></i>
-                </div>
+                <small class="text-muted mt-2 d-block">
+                    {% if current_filter == 'in_progress' %}
+                    <i class="bi bi-check2-circle text-warning me-1"></i> Showing in-progress cases · Click to reset
+                    {% else %}
+                    <i class="bi bi-funnel text-muted me-1"></i> Click to filter in-progress cases
+                    {% endif %}
+                </small>
             </div>
-            <small class="text-muted mt-2 d-block">Assigned and currently being addressed</small>
-        </div>
+        </a>
     </div>
+
+    <!-- Solved Cases Card -->
     <div class="col-sm-4">
-        <div class="card card-stat bg-white p-3 border-start border-4 border-success">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-uppercase text-muted small fw-semibold">Solved Cases</div>
-                    <div class="fs-2 fw-bold text-success">{{ solved_count|stringformat:"02d" }}</div>
+        <a href="{% if current_filter == 'solved' %}?status=all{% else %}?status=solved{% endif %}" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-start border-4 border-success h-100 {% if current_filter == 'solved' %}shadow border-3 border-success bg-success-subtle{% endif %}" style="cursor: pointer; transition: all 0.2s ease;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-uppercase text-muted small fw-semibold">
+                            Solved Cases
+                            {% if current_filter == 'solved' %}
+                            <span class="badge bg-success text-white ms-1">Active Filter</span>
+                            {% endif %}
+                        </div>
+                        <div class="fs-2 fw-bold text-success">{{ solved_count|stringformat:"02d" }}</div>
+                    </div>
+                    <div class="rounded-circle bg-success-subtle p-3 text-success">
+                        <i class="bi bi-check2-circle fs-4"></i>
+                    </div>
                 </div>
-                <div class="rounded-circle bg-success-subtle p-3 text-success">
-                    <i class="bi bi-check2-circle fs-4"></i>
-                </div>
+                <small class="text-muted mt-2 d-block">
+                    {% if current_filter == 'solved' %}
+                    <i class="bi bi-check2-circle text-success me-1"></i> Showing solved cases · Click to reset
+                    {% else %}
+                    <i class="bi bi-funnel text-muted me-1"></i> Click to filter solved cases
+                    {% endif %}
+                </small>
             </div>
-            <small class="text-muted mt-2 d-block">Successfully completed and resolved</small>
-        </div>
+        </a>
     </div>
 </div>
 
-<!-- Recent Cases Section (Wireframe 2) -->
+<!-- Cases Section (Wireframe 2) -->
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
-        <h5 class="fw-bold mb-0 text-dark">
-            <i class="bi bi-clock-history me-2 text-primary"></i> Recent Cases
-        </h5>
-        <a href="{% url 'my_cases' %}" class="small text-decoration-none fw-medium">View all cases &rarr;</a>
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-clock-history me-2 text-primary"></i> Cases
+            </h5>
+            <span class="badge bg-secondary">{{ filter_label }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if current_filter != 'all' %}
+            <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i> Show All ({{ total_count }})
+            </a>
+            {% endif %}
+            <a href="{% url 'my_cases' %}" class="small text-decoration-none fw-medium">View all cases &rarr;</a>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -137,7 +180,12 @@
                 <tr>
                     <td colspan="6" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
-                        No cases recorded yet. Click <strong>Submit New Complaint / Suggestion</strong> to get started!
+                        No cases found under <strong>{{ filter_label }}</strong>.
+                        {% if current_filter != 'all' %}
+                        <div class="mt-2">
+                            <a href="{% url 'home' %}" class="btn btn-sm btn-primary">Reset Filter to Show All</a>
+                        </div>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
