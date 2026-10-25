@@ -5,12 +5,14 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-fmsc-complaint-suggestion-management-system-key'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-local-development-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() == 'true'
+if not DEBUG and not os.environ.get('DJANGO_SECRET_KEY'):
+    raise ValueError('Set DJANGO_SECRET_KEY before running with debug disabled.')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -20,7 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     # Custom project apps
     'accounts.apps.AccountsConfig',
     'authorities.apps.AuthoritiesConfig',
@@ -119,3 +121,26 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Local email is printed to the console; configure SMTP for delivered email.
+EMAIL_BACKEND = os.environ.get('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() == 'true'
+EMAIL_TIMEOUT = 10
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'fmsc@localhost')
+
+MAX_VIDEO_DURATION_SECONDS = int(os.environ.get('MAX_VIDEO_DURATION_SECONDS', '120'))
+
+# Public registration is restricted to configured university domains and subdomains.
+UNIVERSITY_EMAIL_DOMAINS = [domain.strip().lower() for domain in os.environ.get('UNIVERSITY_EMAIL_DOMAINS', 'sjp.ac.lk').split(',') if domain.strip()]
+EMAIL_VERIFICATION_TIMEOUT = 24 * 60 * 60
+
+# Temporary verification preview is local-only and never enabled with real email delivery.
+LOCAL_EMAIL_PREVIEW_ENABLED = (
+    DEBUG
+    and EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend'
+    and os.environ.get('LOCAL_EMAIL_PREVIEW_ENABLED', 'true').lower() == 'true'
+)

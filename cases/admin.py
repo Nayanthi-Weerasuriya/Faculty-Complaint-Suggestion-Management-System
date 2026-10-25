@@ -1,11 +1,17 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from .models import Case, Attachment, CaseComment
 
 
 class AttachmentInline(admin.TabularInline):
     model = Attachment
     extra = 0
-    readonly_fields = ('uploaded_at', 'file_size_kb')
+    readonly_fields = ('uploaded_at', 'file_size_kb', 'evidence_link')
+
+    @admin.display(description='Evidence')
+    def evidence_link(self, obj):
+        return format_html('<a href="{}">View evidence</a>', reverse('attachment', args=[obj.pk])) if obj.pk else '-'
 
 
 class CaseCommentInline(admin.StackedInline):
@@ -25,6 +31,12 @@ class CaseAdmin(admin.ModelAdmin):
 
 @admin.register(Attachment)
 class AttachmentAdmin(admin.ModelAdmin):
+    readonly_fields = ('evidence_link',)
+
+    @admin.display(description='Evidence')
+    def evidence_link(self, obj):
+        return format_html('<a href="{}">View evidence</a>', reverse('attachment', args=[obj.pk])) if obj.pk else '-'
+
     list_display = ('case', 'file_name', 'file_type', 'file_size_kb', 'is_completion_evidence', 'uploaded_by', 'uploaded_at')
     list_filter = ('file_type', 'is_completion_evidence', 'uploaded_at')
 

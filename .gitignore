@@ -28,3 +28,7 @@ db.sqlite3-journal
 # OS
 .DS_Store
 Thumbs.db
+
+# Local backups and runtime configuration
+/backups/
+.env

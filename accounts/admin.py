@@ -10,6 +10,8 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('role', 'reg_or_staff_id', 'department_or_unit', 'contact_number', 'assigned_authority')
         }),
     )
+    readonly_fields = ('registration_pending', 'verification_sent_at', 'email_verified_at')
+    fieldsets += (('Email verification', {'fields': readonly_fields}),)
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'reg_or_staff_id', 'department_or_unit', 'is_active')
     list_filter = ('role', 'is_active', 'is_staff', 'department_or_unit')
     search_fields = ('username', 'first_name', 'last_name', 'email', 'reg_or_staff_id')

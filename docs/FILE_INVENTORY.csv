@@ -1,0 +1,136 @@
+Path,Handoff group,Status,Review
+.gitignore,Foundation,Retained,Configuration or supporting file reviewed
+accounts/__init__.py,Foundation,Retained,Package structure retained
+accounts/admin.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+accounts/apps.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+accounts/backends.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+accounts/forms.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+accounts/migrations/0001_initial.py,Foundation,Retained,Parsed; Django migration-state checks passed
+accounts/migrations/0002_alter_user_role.py,Foundation,Retained,Parsed; Django migration-state checks passed
+accounts/migrations/0003_user_email_verified_at_user_registration_pending_and_more.py,Foundation,Retained,Parsed; Django migration-state checks passed
+accounts/migrations/__init__.py,Foundation,Retained,Package structure retained
+accounts/models.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+accounts/test_registration.py,Member A,Retained,Parsed; included in 64-test suite
+accounts/tests.py,Member A,Retained,Parsed; included in 64-test suite
+accounts/urls.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+accounts/verification.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+accounts/views.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+audit/__init__.py,Foundation,Retained,Package structure retained
+audit/admin.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+audit/apps.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+audit/migrations/0001_initial.py,Foundation,Retained,Parsed; Django migration-state checks passed
+audit/migrations/__init__.py,Foundation,Retained,Package structure retained
+audit/models.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+audit/utils.py,Member B,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+authorities/__init__.py,Foundation,Retained,Package structure retained
+authorities/admin.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+authorities/apps.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+authorities/forms.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+authorities/migrations/0001_initial.py,Foundation,Retained,Parsed; Django migration-state checks passed
+authorities/migrations/__init__.py,Foundation,Retained,Package structure retained
+authorities/models.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+authorities/urls.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+authorities/views.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/__init__.py,Foundation,Retained,Package structure retained
+cases/admin.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/apps.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/filters.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/forms.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/management/__init__.py,Foundation,Retained,Package structure retained
+cases/management/commands/__init__.py,Foundation,Retained,Package structure retained
+cases/management/commands/backup_portal.py,Member B,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/management/commands/seed_data.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/migrations/0001_initial.py,Foundation,Retained,Parsed; Django migration-state checks passed
+cases/migrations/0002_alter_casecomment_comment_type.py,Foundation,Retained,Parsed; Django migration-state checks passed
+cases/migrations/0003_casesequence.py,Foundation,Retained,Parsed; Django migration-state checks passed
+cases/migrations/0004_alter_attachment_file.py,Foundation,Retained,Parsed; Django migration-state checks passed
+cases/migrations/__init__.py,Foundation,Retained,Package structure retained
+cases/models.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/permissions.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/test_workflows.py,Member B,Retained,Parsed; included in 64-test suite
+cases/tests.py,Member A,Retained,Parsed; included in 64-test suite
+cases/urls.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/validators.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+cases/views.py,Member A,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+categories/__init__.py,Foundation,Retained,Package structure retained
+categories/admin.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+categories/apps.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+categories/migrations/0001_initial.py,Foundation,Retained,Parsed; Django migration-state checks passed
+categories/migrations/__init__.py,Foundation,Retained,Package structure retained
+categories/models.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+config/__init__.py,Foundation,Retained,Package structure retained
+config/asgi.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+config/backups.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+config/settings.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+config/urls.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+config/wsgi.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+dashboard/__init__.py,Foundation,Retained,Package structure retained
+dashboard/apps.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+dashboard/migrations/__init__.py,Foundation,Retained,Package structure retained
+dashboard/tests.py,Member B,Retained,Parsed; included in 64-test suite
+dashboard/urls.py,Member B,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+dashboard/views.py,Member B,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+docs/CONTRIBUTION_HANDOFF.md,Foundation,Retained,Documentation reviewed for current behavior and handoff
+docs/FILE_INVENTORY.csv,Foundation,Retained,Documentation reviewed for current behavior and handoff
+manage.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+media/.gitkeep,Foundation,Retained,Configuration or supporting file reviewed
+notifications/__init__.py,Foundation,Retained,Package structure retained
+notifications/admin.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+notifications/apps.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+notifications/context_processors.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+notifications/management/__init__.py,Foundation,Retained,Package structure retained
+notifications/management/commands/__init__.py,Foundation,Retained,Package structure retained
+notifications/management/commands/send_pending_reminders.py,Member B,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+notifications/migrations/0001_initial.py,Foundation,Retained,Parsed; Django migration-state checks passed
+notifications/migrations/__init__.py,Foundation,Retained,Package structure retained
+notifications/models.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+notifications/urls.py,Foundation,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+notifications/utils.py,Member B,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+notifications/views.py,Member B,Retained,Source reviewed; parsed; relevant role/workflow checks executed
+README.md,Foundation,Retained,Documentation reviewed for current behavior and handoff
+requirements.txt,Foundation,Retained,Configuration or supporting file reviewed
+REQUIREMENTS_AUDIT.md,Foundation,Retained,Documentation reviewed for current behavior and handoff
+static/css/fmsc-theme.css,Member A,Retained,Theme/layout selectors and template usage reviewed
+static/css/landing.css,Member A,Retained,Theme/layout selectors and template usage reviewed
+static/css/portal.css,Member A,Retained,Theme/layout selectors and template usage reviewed
+templates/accounts/complaint_handler_login.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/login.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/password_reset.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/password_reset_complete.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/password_reset_confirm.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/password_reset_done.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/password_reset_email.txt,Member A,Retained,Configuration or supporting file reviewed
+templates/accounts/profile.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/register.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/registration_done.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/resend_verification.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/accounts/verify_email.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/authorities/authority_form.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/authorities/authority_list.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/base.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/cases/admin_review.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/cases/authority_update.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/cases/case_detail.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/cases/home.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/cases/my_cases.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/cases/submit_case.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/dashboard/admin_dashboard.html,Member B,Retained,Template reviewed/compiled; role or registration flows checked
+templates/dashboard/authority_dashboard.html,Member B,Retained,Template reviewed/compiled; role or registration flows checked
+templates/dashboard/management_dashboard.html,Member B,Retained,Template reviewed/compiled; role or registration flows checked
+templates/dashboard/management_reports.html,Member B,Retained,Template reviewed/compiled; role or registration flows checked
+templates/dashboard/no_authority.html,Member B,Retained,Template reviewed/compiled; role or registration flows checked
+templates/dashboard/report_filters.html,Member B,Retained,Template reviewed/compiled; role or registration flows checked
+templates/dashboard/system_dashboard.html,Member B,Retained,Template reviewed/compiled; role or registration flows checked
+templates/landing.html,Member A,Retained,Template reviewed/compiled; role or registration flows checked
+templates/notifications/notification_list.html,Member B,Retained,Template reviewed/compiled; role or registration flows checked
+audit/tests.py,Member B,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+audit/views.py,Member B,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+authorities/tests.py,Member A,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+categories/tests.py,Member A,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+categories/views.py,Member A,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+dashboard/admin.py,Foundation,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+dashboard/models.py,Foundation,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+notifications/tests.py,Member B,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+static/images/campus-community.webp,Member A,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+static/images/campus-garden.webp,Member A,Removed,Unused scaffold or obsolete asset; no runtime/data dependency
+docs/landing-artwork.md,Foundation,Removed,Unused scaffold or obsolete asset; no runtime/data dependency

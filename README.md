@@ -1,163 +1,91 @@
-# Faculty Complaint and Suggestion Management App (FMSC)
-**ITC 3380: Programming Applications and Frameworks (June 2026)**  
-*Continuous Assessment Project · Faculty of Management Studies and Commerce, University of Sri Jayewardenepura*
+# FMSC Complaint and Suggestion Management Portal
 
----
+Django application for students and lecturers to submit faculty complaints and suggestions, coordinators to review and assign cases, authorities to record progress and resolution, and faculty management to monitor reports.
 
-## 1. Project Overview
-This repository contains the Django-based **Faculty Complaint and Suggestion Management Portal**, designed and developed according to the formal software project proposal prepared by **Dr. Colombage Ranil Peiris** for the Faculty of Management Studies and Commerce (FMSC), University of Sri Jayewardenepura.
+## Run locally
 
-The platform provides a structured digital channel for students and lecturers to report issues and improvement suggestions with image/video evidence, provides administrators with review and authority assignment workflows, enforces a **10-stage case lifecycle**, and equips faculty leadership with real-time operational and management dashboards with **ageing reports**.
+Python 3.10+ is supported by the dependency ranges; final checks were run with Python 3.14 and the installed Django version. From this project folder:
 
----
-
-## 2. System Architecture & Key Features
-
-### 2.1 Six Stakeholder Roles (Section 6)
-1. **Student**: Submit complaints/suggestions, upload photo/video evidence, track status, view notifications.
-2. **Lecturer**: Report academic, administrative, infrastructure, and student service issues.
-3. **Administrator**: Review submissions, verify category/priority, assign cases to authorities, reject invalid entries, close confirmed cases.
-4. **Relevant Authority** (*Maintenance Division, IT Unit, Examination Unit, Dean's Office, etc.*): Work queue dashboard, progress comments, completion evidence uploads, mark as solved (mandatory resolution notes).
-5. **Faculty Management / Dean**: Strategic dashboards, resolution rate (%), average resolution days, top categories, authority-wise pending load and average aging.
-6. **System Administrator**: Full Django admin access, role assignment, user management, and audit log inspection.
-
-### 2.2 10-Stage Case Lifecycle (Section 8)
-```mermaid
-stateDiagram-v2
-    [*] --> SUBMITTED: User submits case
-    SUBMITTED --> UNDER_REVIEW: Admin verifies case
-    UNDER_REVIEW --> NOT_STARTED: Accepted for action
-    UNDER_REVIEW --> REJECTED: Invalid / duplicate / out-of-scope
-    NOT_STARTED --> ASSIGNED: Assigned to Authority
-    ASSIGNED --> IN_PROGRESS: Authority starts work
-    IN_PROGRESS --> WAITING_FOR_INFO: Additional details requested
-    WAITING_FOR_INFO --> IN_PROGRESS: Details received
-    IN_PROGRESS --> SOLVED: Marked solved with Resolution Note
-    SOLVED --> CLOSED: Admin confirms completion
-    SOLVED --> REOPENED: Reporter unsatisfied
-    REOPENED --> UNDER_REVIEW: Reviewed again
-    CLOSED --> [*]
-    REJECTED --> [*]
-```
-
-### 2.3 Proposed Wireframes Implemented (Section 10)
-- **Wireframe 1**: University Login Screen (`/accounts/login/`) with multi-identifier auth (Registration Number, Staff ID, or University Email).
-- **Wireframe 2**: Student / Lecturer Home Screen (`/`) with summary counters (Submitted, In Progress, Solved), quick actions, and recent cases table.
-- **Wireframe 3**: Case Submission Form (`/cases/submit/`) with Case Type, Priority, Category, Location, Title, Description, Image/Video upload, and mandatory Declaration checkbox.
-- **Wireframe 4**: Admin Dashboard (`/dashboard/admin/`) with operational KPIs (Total, Attempted, Not Attempted, Not Started, Urgent), multi-field filters, and the **Not Started Age Report Table**.
-- **Wireframe 5**: Admin Case Review & Assignment (`/cases/<id>/review/`) for category/priority adjustment, authority assignment, and internal notes.
-- **Wireframe 6**: Authority Work Queue (`/dashboard/authority/`) displaying department pending queue, priority badges, and age in days.
-- **Wireframe 7**: Case Progress Update & Closure (`/cases/<id>/update/`) with progress comment, completion proof upload, and mandatory resolution note (Criterion 17).
-- **Wireframe 8**: Management Dashboard (`/dashboard/management/`) with Complaint vs Suggestion ratios, Urgent vs Normal distribution, Resolution Rate %, Average Resolution Days, Top Categories, and Authority-wise Aging metrics.
-
----
-
-## 3. Group Work Division (2-Member Team Plan)
-*Assessment: 40 Marks total (25 Group Marks + 15 Individual Contribution Marks).*  
-To ensure both team members score maximum individual contribution marks, the workload is partitioned as follows:
-
-| Component | Member 1 (Lead / Architecture & Core Workflow) | Member 2 (Analytics, Progress & Governance) |
-|---|---|---|
-| **User & Roles** | Custom User model (`accounts`), 6 user roles, registration number/email auth backend | Profile management views, user role navigation guards |
-| **Case Submission** | Case submission form, validation, file upload security (25MB limit, video/image mime types) | My Cases filter/search engine (query, status, priority, type) |
-| **Case Workflow** | Admin review & assignment view (Wireframe 5), authority assignment CRUD (Criterion 15) | Authority work queue (Wireframe 6), progress updates & completion proof upload (Wireframe 7) |
-| **Lifecycle & Rules** | Case numbering logic (`FMSC-YYYY-XXXX`), 10-stage status transition engine | Criterion 17 validation (Resolution Note mandatory on Solved), case close and reopen handling |
-| **Dashboards** | Admin Dashboard KPIs & multi-field filter engine (Wireframe 4) | Management Dashboard (Wireframe 8) & Authority-wise Average Ageing calculations |
-| **Notifications & Audit** | In-app notification model, dispatch signals & unread badge context processor | Comprehensive Audit Trail logging (`audit`), IP capture, and timeline display |
-| **Data & Demo** | Initial database schema migrations & settings | Comprehensive test data seeder (`seed_data` command) for the 20-min presentation |
-
----
-
-## 4. Setup & Running Locally
-
-### Prerequisites
-- Python 3.10+ (Tested on Python 3.14)
-- Git
-
-### Installation Steps
-```bash
-# 1. Clone repository
-git clone <your-github-repo-url>
-cd <repo-folder>
-
-# 2. Create and activate virtual environment
+```powershell
 python -m venv venv
-
-# On Windows:
-.\venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Run database migrations
+.\venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 python manage.py migrate
-
-# 5. Populate turnkey test data for demonstration
-python manage.py seed_data
-
-# 6. Start development server
+python manage.py createsuperuser
 python manage.py runserver
 ```
-Visit `http://127.0.0.1:8000/` in your browser.
 
----
+Open http://127.0.0.1:8000/. A superuser can configure users, their roles, categories and authorities in `/admin/`. Set each authority officer's assigned authority before use. Students and lecturers submit cases; coordinators review/assign/reject/reassign and confirm closure; assigned authorities update progress; management has read-only reports; system administrators maintain configuration and download database backups.
 
-## 5. Demo Credentials (For 20-Minute Presentation Demo)
-All test accounts are pre-seeded with the password: `password123`
+For optional local demonstration data only:
 
-| Role | Username / Reg No | Name | Department / Unit |
-|---|---|---|---|
-| **System Admin** | `admin` | System Administrator | IT Systems (Full Access) |
-| **Administrator** | `admin_officer` | Ruwan Senanayake | Faculty General Office |
-| **Student 1** | `student1` (*or* `FMSC/2023/1042`) | Kasun Perera | Department of Accounting |
-| **Student 2** | `student2` (*or* `FMSC/2023/2180`) | Nayanthi Silva | Department of Finance |
-| **Lecturer** | `lecturer1` (*or* `EMP-FMSC-089`) | Dr. K. Wickramasinghe | Department of Information Technology |
-| **Authority: Maintenance** | `maint_head` | Eng. Sunil Jayasinghe | Maintenance Division |
-| **Authority: IT Unit** | `it_head` | Mrs. Nilmini Fernando | IT Unit |
-| **Faculty Management** | `dean_management` | Prof. P. D. Nimal | Dean's Office |
+```powershell
+python manage.py seed_data
+```
 
-*(Note: The login page includes quick pre-fill buttons for smooth live demonstrations without typing).*
+New demonstration accounts use `password123`: `student1`, `student2`, `lecturer1`, `admin_officer`, `maint_head`, `it_head`, `exam_officer`, `dean_management`, and `admin`. Existing passwords are retained. Do not use demonstration credentials for a public deployment.
 
----
+## Public access and registration
 
-## 6. Git & GitHub Collaboration Guidelines
+The common landing page is `/`. Existing reporting-user home pages are now at `/home/`; all role-specific dashboards retain their previous URLs. The navigation and login page link to public registration at `/accounts/register/`.
 
-### Step-by-Step GitHub Setup
-1. **Create Repository on GitHub**:
-   - Go to [github.com/new](https://github.com/new).
-   - Name the repository: `fmsc-complaint-management-system`.
-   - Set it to **Public** or **Private** (add team member as Collaborator under *Settings > Collaborators*).
-2. **Push the Local Codebase**:
-   ```bash
-   git remote add origin https://github.com/<your-username>/fmsc-complaint-management-system.git
-   git add .
-   git commit -m "feat: initial project scaffolding and core architecture for FMSC portal"
-   git push -u origin main
-   ```
-3. **Collaboration Workflow**:
-   - Always create a feature branch before making changes:
-     ```bash
-     git checkout -b feature/your-feature-name
-     ```
-   - Commit changes with clear, descriptive messages:
-     ```bash
-     git commit -m "feat: implement authority progress update and resolution note validation"
-     ```
-   - Push and open a Pull Request (PR) on GitHub for the other member to review.
-   - Pull the latest `main` before starting new tasks:
-     ```bash
-     git checkout main
-     git pull origin main
-     ```
+Students and lecturers can register with their name, username, university email, registration/staff ID, department and password. Registration cannot create privileged accounts. New accounts remain inactive until the email verification link is opened and confirmed. Links expire after 24 hours, can only be used once, and are invalidated when a replacement is sent. Requests to resend are limited to one per minute. Existing user accounts and demo logins retain their current access.
 
----
+The default accepted email domain is `sjp.ac.lk`, including its subdomains. Set `UNIVERSITY_EMAIL_DOMAINS` to a comma-separated list of approved domains if the faculty uses additional domains. This verifies mailbox ownership; it is not an integration with university student or staff records. Both public roles only receive reporting permissions.
 
-## 7. AI Usage Documentation (Course Requirement)
-In accordance with course guidelines, AI tools were utilized during the design and development phases as follows:
-- **Requirement Engineering & Schema Mapping**: AI was utilized to analyze Dr. Ranil Peiris's formal proposal document, mapping out the preliminary data entities (Appendix A), the 10-stage lifecycle states, and role access controls.
-- **Architecture Scaffolding**: AI assisted in configuring the modular Django application structure (`accounts`, `cases`, `authorities`, `categories`, `dashboard`, `notifications`, `audit`).
-- **UI/UX Design**: AI helped convert the low-fidelity wireframes (Wireframes 1–8) into responsive Bootstrap 5 templates adhering to university color themes and accessibility practices.
-- **Validation Logic**: AI assisted in crafting strict business rule enforcement (e.g., Acceptance Criterion 17 requiring mandatory resolution notes when marking cases as solved, and file size/extension validation).
-- **Test Data Synthesis**: AI generated diverse test scenarios matching real faculty incidents (audio-visual issues, infrastructure leaks, classroom furniture, LMS timeout errors) to facilitate effective demonstration during the 20-minute presentation.
+While the console email backend is in use, verification and password-reset emails are printed in the server terminal rather than delivered to a real inbox. For local demonstrations, the registration confirmation page also shows **Open verification link** for the account just created in that browser. Click it, choose **Verify email**, then sign in. This preview requires debug mode, the console email backend and a localhost address; it is hidden with SMTP or production settings. Set `LOCAL_EMAIL_PREVIEW_ENABLED=false` to disable it explicitly. Other browsers and resend requests for existing accounts do not receive someone else's verification link. Configure SMTP as described below before inviting real users. Password-reset links remain available in the server terminal during local testing.
+
+Verified self-registered users cannot replace their email through profile editing. They must contact the System Administrator to change it. Staff, authority, management and administrator accounts are created by the System Administrator; public registration never grants those roles.
+
+## Workflow
+
+Submit → review → accept/assign → progress or request information → solve with resolution note → coordinator confirms closure. The reporter can reply on an active case and reopen a solved/closed case if the resolution is unsatisfactory. Reopened cases return to coordinator review. Invalid submissions can be rejected with a reason.
+
+Evidence is optional: JPG/JPEG/PNG/WEBP or MP4/MOV/AVI/MKV, maximum 25 MB. Both evidence forms validate actual content. Videos must have a readable video stream and duration no greater than `MAX_VIDEO_DURATION_SECONDS` (default 120). The video inspection executable is bundled by imageio-ffmpeg. The default duration is a project policy choice because the proposal does not specify a numeric limit.
+
+Evidence is served only through authenticated attachment URLs. Keep the media directory private in hosting configuration.
+
+## Email and configuration
+
+The local email backend prints messages to the development console. To deliver email, set these environment variables before starting the application:
+
+- `DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend`
+- `EMAIL_HOST`, `EMAIL_PORT` (default 587), `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`
+- `EMAIL_USE_TLS=true` and `DEFAULT_FROM_EMAIL`
+
+Notifications and password reset use the configured backend. In-app notifications remain available if an email delivery attempt fails; failures are logged for investigation.
+
+For deployment, set `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=false` and `DJANGO_ALLOWED_HOSTS` (comma-separated). Run `python manage.py check --deploy` and configure HTTPS and secure cookies at the hosting environment. Local accounts are used; external university SSO is not configured.
+
+## Reminders and backups
+
+```powershell
+python manage.py send_pending_reminders --days 7
+python manage.py backup_portal
+```
+
+Schedule both commands daily with your hosting platform or Windows Task Scheduler using the virtual environment's Python and the project folder as the working directory. Reminders target the responsible unit, or the coordinator when unassigned, and avoid duplicates within the same day. Backups are ZIP archives under `backups/`, containing the SQLite database and evidence files. Use `--directory` for a different backup destination. Scheduling and retention are hosting responsibilities and are not automatically installed.
+
+The system dashboard's download includes the database only. For restoration, stop the app, preserve the current data, restore the archive's `db.sqlite3` and `media/` into the project folder, and restart with the matching application version. Test restoration before relying on scheduled backups.
+
+## Validation and requirements
+
+```powershell
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py test
+```
+
+See [REQUIREMENTS_AUDIT.md](REQUIREMENTS_AUDIT.md) for the proposal checklist, corrected defects, cleanup list, definitions and deployment tasks.
+
+AI assistance was used to review the proposal, implement and clean code, and create regression tests. Faculty pilot testing, hosting approval and training still require human completion.
+
+
+## Portal styling
+
+The supplied FMSC theme is kept in `static/css/fmsc-theme.css` and loaded after Bootstrap. `static/css/portal.css` holds portal layout and compatibility adjustments, including fixed navigation, responsive menus, readable status accents and authentication cards. The public landing page has its own scoped layout in `static/css/landing.css`, adapting the supplied report-cover design with a maroon background, floating illustrative case cards, white heading and saffron accents. These public case previews are examples and do not expose live case records. Legacy inline navy overrides were removed so the theme applies consistently. Fonts use Bricolage Grotesque and Figtree through Google Fonts, with local system fallbacks when unavailable. Django's built-in administration keeps its own interface.
+
+
+## Final review and group handoff
+
+The final audit is in [REQUIREMENTS_AUDIT.md](REQUIREMENTS_AUDIT.md). It records remaining requirements and deployment gaps without claiming full compliance. For the two-member file responsibility map and branch plan, see [docs/CONTRIBUTION_HANDOFF.md](docs/CONTRIBUTION_HANDOFF.md) and [docs/FILE_INVENTORY.csv](docs/FILE_INVENTORY.csv). Existing authorship and repository history should be preserved.
