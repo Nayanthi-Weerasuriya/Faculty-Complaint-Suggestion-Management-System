@@ -56,3 +56,17 @@ a:hover .card-stat { transform:translateY(-3px); box-shadow:var(--fm-shadow-lift
 .card-stat .bg-warning-subtle { background-color:var(--fm-warn-bg) !important; }
 
 .navbar .badge.bg-danger { background:var(--fm-bad) !important; color:#fff !important; }
+
+.navbar-logo {
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+}
+.password-toggle-group { display:flex; width:100%; }
+.password-toggle-group input { min-width:0; flex:1 1 auto; }
+.password-toggle-group input.form-control { border-top-right-radius:0; border-bottom-right-radius:0; }
+.password-toggle { flex:0 0 auto; border-top-left-radius:0; border-bottom-left-radius:0; }
+.auth-page .password-toggle-group input:not(.form-control) {
+  display:block; width:100%; padding:.65rem .9rem; border:1.5px solid #d9d2ce;
+  border-right:0; border-radius:var(--fm-r-sm) 0 0 var(--fm-r-sm);
+}
