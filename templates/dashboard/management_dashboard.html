@@ -3,19 +3,16 @@
 {% block title %}Management Dashboard - FMSC Portal{% endblock %}
 
 {% block content %}
+{% include 'dashboard/report_filters.html' %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h3 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Faculty Management Dashboard</h3>
-        <small class="text-muted">Wireframe 8: Strategic Governance, Resolution Metrics & Department Performance</small>
+        <small class="text-muted">Strategic Governance, Resolution Metrics & Department Performance</small>
     </div>
-    <div>
-        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-speedometer2 me-1"></i> Operational Dashboard
-        </a>
-    </div>
+    <a href="{% url 'management_reports' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-text me-1"></i> View Detailed Reports</a>
 </div>
 
-<!-- Wireframe 8: Key Governance Metrics -->
+<!-- Key Governance Metrics -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-lg-3">
         <div class="card card-stat bg-white p-3 border-top border-4 border-primary">
@@ -67,7 +64,7 @@
     </div>
 </div>
 
-<!-- Wireframe 8: Top Incident Categories -->
+<!-- Top Incident Categories -->
 <div class="card border-0 shadow-sm rounded-3 mb-4">
     <div class="card-header bg-white py-3 border-bottom">
         <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-tags me-2 text-primary"></i> Top Categories Distribution</h6>
@@ -81,7 +78,7 @@
                         <div class="fw-bold text-dark">{{ cat.name }}</div>
                         <small class="text-muted">{{ cat.case_count }} reported incidents</small>
                     </div>
-                    <span class="badge bg-primary rounded-pill px-3 py-2 fs-6" style="background-color: #002b49 !important;">
+                    <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">
                         {{ cat.case_count }}
                     </span>
                 </div>
@@ -93,14 +90,14 @@
     </div>
 </div>
 
-<!-- Wireframe 8: Authority-wise Pending Cases Table -->
+<!-- Authority-wise Pending Cases Table -->
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
         <div>
             <h5 class="fw-bold mb-0 text-dark">
                 <i class="bi bi-building me-2 text-primary"></i> Authority-wise Pending Cases & Average Age
             </h5>
-            <small class="text-muted">Section 9 & Wireframe 8: Departmental accountability and aging breakdown</small>
+            <small class="text-muted">Departmental accountability and aging breakdown</small>
         </div>
     </div>
     <div class="table-responsive">
@@ -112,7 +109,6 @@
                     <th scope="col" class="text-center" style="width: 130px;">In Progress</th>
                     <th scope="col" class="text-center" style="width: 130px;">Not Started</th>
                     <th scope="col" class="text-center" style="width: 150px;">Average Age</th>
-                    <th scope="col" class="text-end" style="width: 120px;">Queue</th>
                 </tr>
             </thead>
             <tbody>
@@ -136,15 +132,10 @@
                             {{ item.average_age }} days
                         </span>
                     </td>
-                    <td class="text-end">
-                        <a href="{% url 'authority_dashboard' %}?authority_id={{ item.authority.id }}" class="btn btn-sm btn-outline-primary">
-                            Inspect
-                        </a>
-                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">No authority workload recorded yet.</td>
+                    <td colspan="5" class="text-center py-4 text-muted">No authority workload recorded yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>

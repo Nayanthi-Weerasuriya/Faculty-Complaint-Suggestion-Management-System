@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Notification
+from django.views.decorators.http import require_POST
 
 
 @login_required
@@ -10,6 +11,7 @@ def notification_list_view(request):
 
 
 @login_required
+@require_POST
 def mark_notification_read_view(request, pk):
     notification = get_object_or_404(Notification, pk=pk, recipient=request.user)
     notification.is_read = True
@@ -20,6 +22,7 @@ def mark_notification_read_view(request, pk):
 
 
 @login_required
+@require_POST
 def mark_all_read_view(request):
     Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
     return redirect('notification_list')

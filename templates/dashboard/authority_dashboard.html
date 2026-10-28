@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Authority Work Queue - FMSC Portal{% endblock %}
 
@@ -8,23 +8,12 @@
         <h3 class="fw-bold text-dark mb-0">
             <i class="bi bi-tools text-primary me-2"></i> Authority Dashboard: <span class="text-primary">{{ authority.name|default:"General Authority Queue" }}</span>
         </h3>
-        <small class="text-muted">Wireframe 6: Departmental Work Queue & Active Case Tracking</small>
+        <small class="text-muted">Departmental Work Queue & Active Case Tracking</small>
     </div>
 
-    {% if all_authorities %}
-    <!-- Admin authority switcher for demo flexibility -->
-    <form method="get" class="d-flex align-items-center gap-2">
-        <label class="small text-muted fw-semibold">View Authority Queue:</label>
-        <select name="authority_id" class="form-select form-select-sm" onchange="this.form.submit()">
-            {% for a in all_authorities %}
-            <option value="{{ a.id }}" {% if authority.id == a.id %}selected{% endif %}>{{ a.name }}</option>
-            {% endfor %}
-        </select>
-    </form>
-    {% endif %}
 </div>
 
-<!-- Wireframe 6: Clickable Authority Operational Indicators -->
+<!-- Clickable Authority Operational Indicators -->
 <div class="row g-3 mb-4">
     <!-- Assigned Cases -->
     <div class="col-sm-6 col-md-3">
@@ -83,7 +72,7 @@
     </div>
 </div>
 
-<!-- Wireframe 6: My Assigned Cases Work Queue Table -->
+<!-- My Assigned Cases Work Queue Table -->
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
@@ -124,7 +113,7 @@
                         <small class="text-muted"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ case.location }}</small>
                     </td>
                     <td>
-                        <span class="badge rounded-pill 
+                        <span class="badge rounded-pill
                             {% if case.status == 'in_progress' %}bg-warning text-dark
                             {% elif case.status == 'waiting_for_info' %}bg-secondary
                             {% elif case.status == 'assigned' %}bg-info text-dark
@@ -145,9 +134,9 @@
                         </span>
                     </td>
                     <td class="text-end">
-                        <a href="{% url 'authority_update_case' case.pk %}" class="btn btn-sm btn-success fw-semibold">
-                            <i class="bi bi-pencil-square me-1"></i> [ Update ]
-                        </a>
+                        {% if case.status == 'assigned' or case.status == 'not_started' or case.status == 'in_progress' or case.status == 'waiting_for_info' %}<a href="{% url 'authority_update_case' case.pk %}" class="btn btn-sm btn-success fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Update
+                        </a>{% else %}<a href="{% url 'case_detail' case.pk %}" class="btn btn-sm btn-outline-primary">View</a>{% endif %}
                     </td>
                 </tr>
                 {% empty %}
