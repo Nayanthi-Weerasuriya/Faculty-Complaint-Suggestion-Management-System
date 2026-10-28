@@ -1,23 +1,15 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
-{% block title %}Admin Dashboard & Operations - FMSC Portal{% endblock %}
+{% block title %}Complaint Coordinator Case Operations - FMSC Portal{% endblock %}
 
 {% block content %}
 <!-- Top Header -->
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
     <div>
         <h3 class="fw-bold text-dark mb-0">
-            <i class="bi bi-speedometer2 text-primary me-2"></i> Admin Operations Dashboard
+            <i class="bi bi-speedometer2 text-primary me-2"></i> Complaint Coordinator - Case Operations
         </h3>
-        <small class="text-muted">Central Command: Case Review, Authority Assignment, and Ageing Delays</small>
-    </div>
-    <div class="d-flex gap-2">
-        <a href="{% url 'authority_list' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-diagram-3 me-1"></i> Manage Authorities
-        </a>
-        <a href="{% url 'management_dashboard' %}" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-graph-up me-1"></i> Executive Analytics View
-        </a>
+        <small class="text-muted">Review, assign, monitor, close, or reject case records.</small>
     </div>
 </div>
 
@@ -25,7 +17,7 @@
 <div class="row g-3 mb-4">
     <!-- Total Cases -->
     <div class="col-sm-6 col-lg">
-        <a href="?status=all" class="text-decoration-none">
+        <a href="?date_from={{ date_from }}&amp;date_to={{ date_to }}&amp;status=all" class="text-decoration-none">
             <div class="card card-stat bg-white p-3 border-top border-4 border-primary h-100 {% if not selected_status and not selected_priority %}shadow-sm border-3 bg-light{% endif %}" style="cursor: pointer;">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -48,7 +40,7 @@
 
     <!-- Urgent Cases -->
     <div class="col-sm-6 col-lg">
-        <a href="?priority=urgent" class="text-decoration-none">
+        <a href="?date_from={{ date_from }}&amp;date_to={{ date_to }}&amp;priority=urgent" class="text-decoration-none">
             <div class="card card-stat bg-white p-3 border-top border-4 border-danger h-100 {% if selected_priority == 'urgent' %}shadow border-3 border-danger bg-danger-subtle{% endif %}" style="cursor: pointer;">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -71,7 +63,7 @@
 
     <!-- Not Started Cases (Age Report) -->
     <div class="col-sm-6 col-lg">
-        <a href="?status=not_started" class="text-decoration-none">
+        <a href="?date_from={{ date_from }}&amp;date_to={{ date_to }}&amp;status=not_started" class="text-decoration-none">
             <div class="card card-stat bg-white p-3 border-top border-4 border-warning h-100 {% if selected_status == 'not_started' %}shadow border-3 border-warning bg-warning-subtle{% endif %}" style="cursor: pointer;">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -94,7 +86,7 @@
 
     <!-- Attempted Cases -->
     <div class="col-sm-6 col-lg">
-        <a href="?status=attempted" class="text-decoration-none">
+        <a href="?date_from={{ date_from }}&amp;date_to={{ date_to }}&amp;status=attempted" class="text-decoration-none">
             <div class="card card-stat bg-white p-3 border-top border-4 border-info h-100 {% if selected_status == 'attempted' %}shadow border-3 border-info bg-info-subtle{% endif %}" style="cursor: pointer;">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -115,19 +107,19 @@
         </a>
     </div>
 
-    <!-- Solved Cases -->
+    <!-- Solved and Closed Cases -->
     <div class="col-sm-6 col-lg">
-        <a href="?status=solved" class="text-decoration-none">
-            <div class="card card-stat bg-white p-3 border-top border-4 border-success h-100 {% if selected_status == 'solved' %}shadow border-3 border-success bg-success-subtle{% endif %}" style="cursor: pointer;">
+        <a href="?date_from={{ date_from }}&amp;date_to={{ date_to }}&amp;status=resolved" class="text-decoration-none">
+            <div class="card card-stat bg-white p-3 border-top border-4 border-success h-100 {% if selected_status == 'resolved' %}shadow border-3 border-success bg-success-subtle{% endif %}" style="cursor: pointer;">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="text-uppercase text-muted small fw-semibold">
                             Solved & Closed
-                            {% if selected_status == 'solved' %}
+                            {% if selected_status == 'resolved' %}
                             <span class="badge bg-success text-white ms-1">Active Filter</span>
                             {% endif %}
                         </div>
-                        <div class="fs-2 fw-bold text-success">{{ solved_cases }}</div>
+                        <div class="fs-2 fw-bold text-success">{{ resolved_cases }}</div>
                     </div>
                     <div class="rounded-circle bg-success-subtle p-2 text-success">
                         <i class="bi bi-check2-circle fs-5"></i>
@@ -196,7 +188,7 @@
                 </select>
             </div>
             <div class="col-md-1 d-grid">
-                <button type="submit" class="btn btn-primary btn-sm fw-semibold" style="background-color: #002b49;">
+                <button type="submit" class="btn btn-primary btn-sm fw-semibold">
                     Apply
                 </button>
             </div>
@@ -273,7 +265,7 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge rounded-pill 
+                        <span class="badge rounded-pill
                             {% if case.status == 'submitted' %}bg-info text-dark
                             {% elif case.status == 'under_review' %}bg-primary
                             {% elif case.status == 'assigned' %}bg-secondary
@@ -286,9 +278,9 @@
                         </span>
                     </td>
                     <td class="text-end">
-                        <a href="{% url 'admin_review_case' case.pk %}" class="btn btn-sm btn-primary" style="background-color: #002b49;">
+                        {% if case.is_open %}<a href="{% url 'admin_review_case' case.pk %}" class="btn btn-sm btn-primary">
                             Assign / Review <i class="bi bi-chevron-right ms-1"></i>
-                        </a>
+                        </a>{% else %}<a class="btn btn-sm btn-outline-primary" href="{% url 'case_detail' case.pk %}">View</a>{% endif %}
                     </td>
                 </tr>
                 {% empty %}
@@ -307,60 +299,4 @@
     </div>
 </div>
 
-<!-- Authority Workload & Average Ageing Breakdown (Integrated Performance View) -->
-<div class="card border-0 shadow-sm rounded-3">
-    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-        <div>
-            <h5 class="fw-bold mb-0 text-dark">
-                <i class="bi bi-building me-2 text-primary"></i> Departmental Authority Workload & Ageing
-            </h5>
-            <small class="text-muted">Section 9 & Acceptance Criterion 20: Real-time department backlog and average resolution aging.</small>
-        </div>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th scope="col">Authority Department</th>
-                    <th scope="col" class="text-center">Total Assigned</th>
-                    <th scope="col" class="text-center">In Progress</th>
-                    <th scope="col" class="text-center">Not Started</th>
-                    <th scope="col" class="text-center">Average Age</th>
-                    <th scope="col" class="text-end">Quick Filter</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in authority_breakdown %}
-                <tr>
-                    <td>
-                        <strong class="text-dark">{{ item.authority.name }}</strong>
-                        <div class="small text-muted">{{ item.authority.officer_name }} · {{ item.authority.designation }}</div>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge bg-light text-dark border px-3 py-2 fs-6">{{ item.assigned }}</span>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">{{ item.in_progress }}</span>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge {% if item.not_started > 3 %}bg-danger{% else %}bg-secondary{% endif %} px-3 py-2 fs-6">{{ item.not_started }}</span>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge bg-light text-dark border px-3 py-2 fs-6">{{ item.average_age }} days</span>
-                    </td>
-                    <td class="text-end">
-                        <a href="?authority={{ item.authority.id }}" class="btn btn-sm btn-outline-primary">
-                            Filter Cases
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">No authority workload recorded.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
 {% endblock %}
