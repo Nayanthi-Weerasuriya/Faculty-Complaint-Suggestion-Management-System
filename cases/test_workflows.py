@@ -269,3 +269,60 @@ class WorkflowRegressionTests(TransactionTestCase):
         self.assertIsNone(self.case.action_started_at)
         self.assertIsNotNone(self.case.reviewed_at)
         self.assertIn('Priority: urgent',self.case.audit_logs.first().new_value)
+
+    def test_assignment_notification_only_reaches_active_authority_staff(self):
+        unrelated = User.objects.create_user('linked_student', role=UserRole.STUDENT,
+                                             assigned_authority=self.authority)
+        inactive = User.objects.create_user('inactive_officer', role=UserRole.AUTHORITY,
+                                            assigned_authority=self.authority, is_active=False)
+        self.login(self.coordinator)
+        response = self.client.post(reverse('admin_review_case', args=[self.case.pk]), dict(
+            category=self.category.pk, priority='normal', status='assigned',
+            assigned_authority=self.authority.pk, admin_notes='Please investigate'))
+        self.assertEqual(response.status_code, 302)
+        recipients = Notification.objects.filter(case=self.case, notification_type='assigned')
+        self.assertEqual(list(recipients.values_list('recipient_id', flat=True)), [self.officer.pk])
+        self.assertFalse(Notification.objects.filter(recipient__in=[unrelated, inactive]).exists())
+
+    def test_audit_ignores_untrusted_forwarded_ip_and_handles_invalid_peer(self):
+        from audit.utils import log_audit
+        from django.test import RequestFactory
+        request = RequestFactory().get('/', REMOTE_ADDR='127.0.0.1', HTTP_X_FORWARDED_FOR='invalid')
+        request.user = self.coordinator
+        log = log_audit(self.case, self.coordinator, 'Review', request=request)
+        self.assertEqual(log.ip_address, '127.0.0.1')
+        request.META['REMOTE_ADDR'] = 'invalid'
+        log = log_audit(self.case, self.coordinator, 'Review', request=request)
+        self.assertIsNone(log.ip_address)
+
+    def test_email_configuration_command_uses_smtp_and_reports_failure(self):
+        from unittest.mock import patch
+        from django.core.management.base import CommandError
+        with self.assertRaises(CommandError):
+            call_command('test_email', to='owner@example.com', stdout=StringIO())
+        with override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend',
+                               EMAIL_HOST='smtp.example.com', DEFAULT_FROM_EMAIL='portal@example.com'):
+            with patch('notifications.management.commands.test_email.send_mail', return_value=1) as send:
+                call_command('test_email', to='owner@example.com', stdout=StringIO())
+                self.assertEqual(send.call_args.args[3], ['owner@example.com'])
+            with patch('notifications.management.commands.test_email.send_mail', side_effect=RuntimeError('sensitive')):
+                with self.assertRaises(CommandError) as error:
+                    call_command('test_email', to='owner@example.com', stdout=StringIO())
+                self.assertNotIn('sensitive', str(error.exception))
+
+    def test_backup_archive_can_restore_records_and_evidence_in_isolation(self):
+        import sqlite3
+        from zipfile import ZipFile
+        attachment = Attachment.objects.create(case=self.case, file=self.image(), uploaded_by=self.student)
+        with tempfile.TemporaryDirectory() as directory:
+            call_command('backup_portal', directory=directory, stdout=StringIO())
+            archive = next(Path(directory).glob('*.zip'))
+            restored = Path(directory) / 'restored.sqlite3'
+            with ZipFile(archive) as saved:
+                restored.write_bytes(saved.read('db.sqlite3'))
+                with attachment.file.open('rb') as evidence:
+                    self.assertEqual(saved.read('media/' + attachment.file.name), evidence.read())
+            with closing(sqlite3.connect(restored)) as connection:
+                self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
+                self.assertEqual(connection.execute('SELECT title FROM cases_case WHERE id = ?',
+                                                     [self.case.pk]).fetchone()[0], self.case.title)

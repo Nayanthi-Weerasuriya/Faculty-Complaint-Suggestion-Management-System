@@ -76,22 +76,61 @@ python manage.py makemigrations --check --dry-run
 python manage.py test
 ```
 
-See [REQUIREMENTS_AUDIT.md](REQUIREMENTS_AUDIT.md) for the proposal checklist, corrected defects, cleanup list, definitions and deployment tasks.
+OpenAI Codex assisted with proposal review, implementation, UI changes, debugging, code cleanup, regression tests and documentation. Changes were checked using automated tests, Django system checks and migration checks. Team members should explain their own review, testing and modifications during the presentation. Faculty pilot testing, hosting approval and training still require human completion.
 
-AI assistance was used to review the proposal, implement and clean code, and create regression tests. Faculty pilot testing, hosting approval and training still require human completion.
+Remaining external steps: enter approved SMTP and hosting values, verify delivery to a real inbox, activate maintenance scheduling on the target host, and conduct faculty acceptance and load testing. An isolated database/evidence restore regression test is included; a host-level restore rehearsal is still needed. The application is not yet verified for production use.
 
 
 ## Portal styling
 
-The supplied FMSC theme is kept in `static/css/fmsc-theme.css` and loaded after Bootstrap. `static/css/portal.css` holds portal layout and compatibility adjustments, including fixed navigation, responsive menus, readable status accents and authentication cards. The public landing page has its own scoped layout in `static/css/landing.css`, adapting the supplied report-cover design with a maroon background, floating illustrative case cards, white heading and saffron accents. These public case previews are examples and do not expose live case records. Legacy inline navy overrides were removed so the theme applies consistently. Fonts use Bricolage Grotesque and Figtree through Google Fonts, with local system fallbacks when unavailable. Django's built-in administration keeps its own interface.
+The supplied FMSC theme is kept in `static/css/fmsc-theme.css` and loaded after Bootstrap. `static/css/portal.css` holds portal layout and compatibility adjustments, including fixed navigation, responsive menus, readable status accents and authentication cards. The public landing page has its own scoped layout in `static/css/landing.css`, matching the supplied homepage reference with a maroon hero, floating illustrative case cards, off-white content, numbered process cards, a cream FAQ panel and saffron accents. These public case previews are examples and do not expose live case records. Legacy inline navy overrides were removed so the theme applies consistently. Fonts use Bricolage Grotesque and Figtree through Google Fonts, with local system fallbacks when unavailable. Django's built-in administration keeps its own interface.
 
-
-## Final review and group handoff
-
-The final audit is in [REQUIREMENTS_AUDIT.md](REQUIREMENTS_AUDIT.md). It records remaining requirements and deployment gaps without claiming full compliance. For the two-member file responsibility map and branch plan, see [docs/CONTRIBUTION_HANDOFF.md](docs/CONTRIBUTION_HANDOFF.md) and [docs/FILE_INVENTORY.csv](docs/FILE_INVENTORY.csv). Existing authorship and repository history should be preserved.
 
 ## Reporting and workflow safeguards (29 October 2026)
 
 Management chart proportions use the filtered case counts, including empty results. The coordinator filter exposes inclusive submission date bounds and shows validation errors for invalid or reversed ranges. Authority pending totals and average ages both use Assigned, Not Started, In Progress and Waiting for Information; units with no pending cases are omitted, while historical cases remain in detailed reports.
 
 Before assigning a case, create or activate a user with the Relevant Authority role and assign that user to the receiving unit. An active unit without an active Authority user cannot receive assignments. Cases, attachments, comments and audit records are read-only in Django administration, including for superusers; use the role-specific portal to perform workflow changes and preserve notifications, timestamps and audit history. User, category and authority configuration remains available in administration.
+
+Audit IP addresses use the direct connection address. Forwarded headers are ignored unless a trusted proxy policy is implemented.
+
+## Production and email setup
+
+`.env.example` is a configuration template; Django does not load it automatically. Copy it to `.env`, replace every placeholder, then load it into the current PowerShell process:
+
+```powershell
+Copy-Item .env.example .env
+# Edit .env locally. Never commit or share its credentials.
+. .\scripts\load-environment.ps1
+python manage.py check --deploy
+python manage.py collectstatic --noinput
+python manage.py test_email --to your-own-address@example.edu
+```
+
+The test command sends one explicit SMTP test message. SMTP acceptance does not prove inbox receipt: confirm the message in the inbox/spam folder. Do not run it until the university-approved sender, server and credentials are configured. Port 587 normally uses TLS; if the provider requires implicit SSL (commonly port 465), use EMAIL_USE_TLS=false and EMAIL_USE_SSL=true.
+
+With DJANGO_DEBUG=false, HTTPS redirect, secure session/CSRF cookies and one-year HSTS are enabled. A strong secret and explicit hosts are required. Serve static files from STATIC_ROOT using the hosting platform/web server after collectstatic, run the Django WSGI/ASGI app with the host's production server, and keep media private. Set the trusted-proxy option only if the proxy removes client-supplied forwarded headers and sets the HTTPS header itself. HSTS subdomain coverage and preload are deliberately disabled until the university approves their domain-wide implications (then set DJANGO_HSTS_INCLUDE_SUBDOMAINS and DJANGO_HSTS_PRELOAD to true); Django deployment checks flag those two opt-ins. Local development remains available without .env using debug mode and console email.
+
+## Prepared maintenance scripts
+
+No scheduled task is installed automatically. To test backup/reminder execution manually on the intended host:
+
+```powershell
+.\scripts\run-maintenance.ps1
+```
+
+The runner loads .env if present, uses venv\Scripts\python.exe, backs up database/evidence first, then sends reminders for cases unchanged for seven days. It stops on command errors. Customize with `-PythonPath` or `-ReminderDays`. Keep backups private and configure off-machine storage and a retention policy with the university; the script does not delete older backups.
+
+When ready, install the prepared daily Windows task (09:00 in that computer's local timezone):
+
+```powershell
+.\scripts\install-maintenance-task.ps1 -At '09:00'
+```
+
+This runs with your current user's permissions while signed in, starts missed runs when available and prevents overlapping runs. It does not replace an existing task. For an always-on university server, configure the same management commands through its scheduler and service account instead. The machine must be on and have access to its configuration, Python and backup destination. Review task history and email delivery logs after activation.
+
+## Final acceptance rehearsal
+
+Use disposable demo data and accounts, with both members present. Demonstrate registration/verification and login; complaint and suggestion submission with image/video validation; review, rejection, assignment and reassignment; progress and clarification replies; mandatory resolution notes and solved notification; closure/reopening; authority maintenance; every status summary and report filter; cross-user attachment denial; reminder deduplication; and backup recovery in a separate location. Compare reported counts to the prepared records and verify delivered email independently. Record actual results and faculty feedback; automated tests are not faculty acceptance sign-off.
+
+The compact status summaries cover total, attempted, not attempted, open, not started, urgent, normal, solved, closed and rejected. Coordinator summaries follow submission dates; management summaries follow all report filters. Open follows the proposal definition (not closed), while active workflow controls exclude solved/closed/rejected.

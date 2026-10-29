@@ -6,6 +6,8 @@ from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import strip_tags
+from html import unescape
 from .forms import PublicRegistrationForm
 from .models import User, UserRole
 
@@ -29,7 +31,8 @@ class PublicRegistrationTests(TestCase):
         response = self.client.get(reverse('landing'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse('register'))
-        self.assertContains(response, 'Faculty Complaint &amp;')
+        text = ' '.join(unescape(strip_tags(response.content.decode())).split())
+        self.assertIn('Faculty Complaint & Suggestion Management System', text)
         self.assertNotIn('recent_cases', response.context)
         self.assertEqual(self.client.get(reverse('home')).status_code, 302)
         self.assertEqual(self.client.get(reverse('submit_case')).status_code, 302)
@@ -254,3 +257,28 @@ class LocalVerificationPreviewTests(TestCase):
         session['registered_user_id'] = user.pk
         session.save()
         self.assertIsNone(self.client.get(reverse('registration_done')).context['local_verification_url'])
+
+
+class ConsolePasswordResetTests(TestCase):
+    @override_settings(DEBUG=True, EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend')
+    def test_local_email_prints_complete_usable_reset_url_without_mime_encoding(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+        User.objects.create_user('reset_user', email='reset@example.com', password='BeforeReset!6387')
+        output = StringIO()
+        with redirect_stdout(output):
+            self.client.post(reverse('password_reset'), {'email': 'reset@example.com'}, HTTP_HOST='127.0.0.1:8000')
+        text = output.getvalue()
+        self.assertIn('Password reset email (local development)', text)
+        self.assertNotIn('Content-Transfer-Encoding:', text)
+        link = re.search(r'http://[^\s]+', text)[0]
+        self.assertNotIn('=', link)
+        response = self.client.get(link, follow=True)
+        self.assertContains(response, 'name="new_password1"')
+
+    @override_settings(DEBUG=True, EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_non_console_email_uses_normal_backend(self):
+        User.objects.create_user('reset_user', email='reset@example.com', password='BeforeReset!6387')
+        self.client.post(reverse('password_reset'), {'email': 'reset@example.com'}, HTTP_HOST='127.0.0.1:8000')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('/accounts/reset/', mail.outbox[0].body)

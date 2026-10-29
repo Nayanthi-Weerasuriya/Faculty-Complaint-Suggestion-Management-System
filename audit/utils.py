@@ -1,3 +1,4 @@
+from ipaddress import ip_address
 from .models import AuditLog
 
 
@@ -7,11 +8,11 @@ def log_audit(case, user, action_type, old_value='', new_value='', notes='', req
     """
     ip = None
     if request:
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0].strip()
-        else:
-            ip = request.META.get('REMOTE_ADDR')
+        # Forwarded headers require a trusted proxy policy; use the direct peer.
+        try:
+            ip = str(ip_address(request.META.get('REMOTE_ADDR', '')))
+        except ValueError:
+            ip = None
 
     return AuditLog.objects.create(
         case=case,

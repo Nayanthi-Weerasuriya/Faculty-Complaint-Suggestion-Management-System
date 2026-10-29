@@ -248,7 +248,9 @@ def admin_review_case_view(request, pk):
             # Notifications
             if updated_case.assigned_authority and updated_case.status in [CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED]:
                 # Notify authority officers
-                authority_officers = User.objects.filter(assigned_authority=updated_case.assigned_authority)
+                authority_officers = User.objects.filter(
+                    assigned_authority=updated_case.assigned_authority, role=UserRole.AUTHORITY, is_active=True
+                )
                 for officer in authority_officers:
                     create_notification(
                         recipient=officer,

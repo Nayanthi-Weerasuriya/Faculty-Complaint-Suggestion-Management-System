@@ -1,0 +1,9 @@
+<section class="mb-4" aria-label="Case status summary">
+    <h2 class="h6 mb-2">Case status summary</h2>
+    <p class="small text-muted mb-2">{{ summary_scope }} Open means not closed, including solved and rejected cases.</p>
+    <dl class="d-flex flex-wrap gap-3 mb-0">
+        {% for label, count in status_summary %}
+        <div class="d-flex gap-2"><dt class="small fw-normal text-muted">{{ label }}</dt><dd class="small fw-bold mb-0">{{ count }}</dd></div>
+        {% endfor %}
+    </dl>
+</section>

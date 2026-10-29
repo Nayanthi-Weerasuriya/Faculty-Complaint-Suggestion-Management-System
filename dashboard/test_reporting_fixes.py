@@ -102,3 +102,20 @@ class ReportingFixTests(TestCase):
             self.assertFalse(model_admin.has_change_permission(request))
             self.assertFalse(model_admin.has_delete_permission(request))
         self.assertEqual(self.client.post(reverse('admin:cases_case_delete', args=[case.pk]), {'post': 'yes'}).status_code, 403)
+
+    def test_all_required_status_summaries_follow_filters(self):
+        from dashboard.metrics import status_summary
+        for status in CaseStatus.values:
+            self.case(status=status, priority='urgent' if status == CaseStatus.SUBMITTED else 'normal',
+                      resolution_notes='Done' if status in [CaseStatus.SOLVED, CaseStatus.CLOSED] else '')
+        counts = dict(status_summary(Case.objects.all()))
+        self.assertEqual(counts, {'Total': 10, 'Attempted': 8, 'Not attempted': 1, 'Open': 9,
+                                 'Not started': 2, 'Urgent': 1, 'Normal': 9, 'Solved': 1,
+                                 'Closed': 1, 'Rejected': 1})
+        self.client.force_login(self.manager)
+        response = self.client.get(reverse('management_dashboard'), {'priority': 'urgent'})
+        self.assertEqual(dict(response.context['status_summary'])['Total'], 1)
+        self.assertContains(response, 'Case status summary')
+        self.client.force_login(self.coordinator)
+        response = self.client.get(reverse('admin_dashboard'), {'date_to': '2000-01-01'})
+        self.assertTrue(all(count == 0 for _, count in response.context['status_summary']))

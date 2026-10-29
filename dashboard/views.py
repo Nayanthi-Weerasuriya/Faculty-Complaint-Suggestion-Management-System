@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from cases.filters import ReportFilterForm, DateRangeFilterForm
 from config.backups import snapshot_database
+from .metrics import status_summary
 
 from cases.models import Case, CaseStatus, CasePriority, CaseType
 from categories.models import Category
@@ -125,6 +126,8 @@ def admin_dashboard_view(request):
     table_cases = cases.order_by('-priority', 'submitted_at')
 
     context = {
+        'status_summary': status_summary(all_cases_qs),
+        'summary_scope': 'Submission date range; other table filters do not change these counts.',
         'total_cases': total_count,
         'attempted_cases': attempted_count,
         'not_started_cases': not_started_count,
@@ -279,6 +282,8 @@ def management_dashboard_view(request):
 
     context = {
         'report_filters': report_filters,
+        'status_summary': status_summary(all_cases),
+        'summary_scope': 'All selected report filters apply to these counts.',
         'complaints_count': complaints_count,
         'complaints_percentage': round(complaints_count / total_count * 100, 2) if total_count else 0,
         'suggestions_percentage': round(suggestions_count / total_count * 100, 2) if total_count else 0,

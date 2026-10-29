@@ -12,7 +12,24 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() == 'true'
 if not DEBUG and not os.environ.get('DJANGO_SECRET_KEY'):
     raise ValueError('Set DJANGO_SECRET_KEY before running with debug disabled.')
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',')
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',') if host.strip()]
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()]
+
+# HTTPS is required for production. Local HTTP development retains usable cookies.
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = 0 if DEBUG else 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG and os.environ.get('DJANGO_HSTS_INCLUDE_SUBDOMAINS', 'false').lower() == 'true'
+SECURE_HSTS_PRELOAD = not DEBUG and os.environ.get('DJANGO_HSTS_PRELOAD', 'false').lower() == 'true'
+if not DEBUG:
+    if len(SECRET_KEY) < 50 or SECRET_KEY.startswith('django-insecure-') or len(set(SECRET_KEY)) < 5:
+        raise ValueError('Production DJANGO_SECRET_KEY must be a strong random key of at least 50 characters.')
+    if not os.environ.get('DJANGO_ALLOWED_HOSTS') or not ALLOWED_HOSTS or '*' in ALLOWED_HOSTS:
+        raise ValueError('Set explicit DJANGO_ALLOWED_HOSTS for production.')
+# Enable only when a trusted reverse proxy strips client headers and sets this value.
+if os.environ.get('DJANGO_TRUST_PROXY_HTTPS', 'false').lower() == 'true':
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 INSTALLED_APPS = [
@@ -129,6 +146,9 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() == 'true'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'false').lower() == 'true'
+if EMAIL_USE_TLS and EMAIL_USE_SSL:
+    raise ValueError('Use either EMAIL_USE_TLS or EMAIL_USE_SSL, not both.')
 EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'fmsc@localhost')
 

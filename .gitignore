@@ -32,3 +32,7 @@ Thumbs.db
 # Local backups and runtime configuration
 /backups/
 .env
+
+/handoff-artifacts/
+
+/submission/

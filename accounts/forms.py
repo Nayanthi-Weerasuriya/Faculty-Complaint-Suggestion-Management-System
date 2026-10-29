@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm
 from django.conf import settings
 from django.db.models import Q
 from .models import User, UserRole
@@ -120,3 +120,26 @@ class PublicRegistrationForm(UserCreationForm):
 
 class VerificationResendForm(forms.Form):
     email = forms.EmailField(label='University email', widget=forms.EmailInput(attrs={'class': 'form-control', 'autocomplete': 'email'}))
+
+
+class FacultyPasswordResetForm(PasswordResetForm):
+    """Print decoded reset emails locally; retain normal mail transport elsewhere."""
+    def send_mail(self, subject_template_name, email_template_name, context,
+                  from_email, to_email, html_email_template_name=None):
+        from urllib.parse import urlsplit
+        from django.template.loader import render_to_string
+
+        local_console = (
+            settings.DEBUG
+            and settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend'
+            and urlsplit('//' + context['domain']).hostname in {'localhost', '127.0.0.1', '::1'}
+        )
+        if local_console:
+            # MIME transfer encoding can split copied URLs with '=\n'. Print the
+            # decoded body directly, only in the existing local console-email mode.
+            body = render_to_string(email_template_name, context)
+            print('\n--- Password reset email (local development) ---\n'
+                  + body + '\n--- End password reset email ---\n')
+            return
+        return super().send_mail(subject_template_name, email_template_name, context,
+                                 from_email, to_email, html_email_template_name)
