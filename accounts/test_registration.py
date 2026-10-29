@@ -93,6 +93,15 @@ class PublicRegistrationTests(TestCase):
         self.assertIn('password2', form.errors)
         self.assertIn('reg_or_staff_id', form.errors)
 
+    def test_registration_department_must_be_selected_from_department_list(self):
+        form = PublicRegistrationForm(self.data(department_or_unit='Finance'))
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data['department_or_unit'], 'Finance')
+
+        invalid_form = PublicRegistrationForm(self.data(department_or_unit='Unlisted department'))
+        self.assertFalse(invalid_form.is_valid())
+        self.assertIn('department_or_unit', invalid_form.errors)
+
     def test_tampered_and_expired_links_do_not_activate(self):
         self.register()
         link = self.link()

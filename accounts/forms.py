@@ -5,6 +5,22 @@ from django.db.models import Q
 from .models import User, UserRole
 
 
+DEPARTMENT_CHOICES = [
+    ('Accounting', 'Accounting'),
+    ('Business Administration', 'Business Administration'),
+    ('Business Economics', 'Business Economics'),
+    ('Commerce', 'Commerce'),
+    ('Decision Sciences', 'Decision Sciences'),
+    ('Entrepreneurship', 'Entrepreneurship'),
+    ('Estate Management and Valuation', 'Estate Management and Valuation'),
+    ('Finance', 'Finance'),
+    ('Human Resource Management', 'Human Resource Management'),
+    ('Information Technology', 'Information Technology'),
+    ('Marketing Management', 'Marketing Management'),
+    ('Public Administration', 'Public Administration'),
+]
+
+
 class FacultyLoginForm(AuthenticationForm):
     """
     Login form matching Wireframe 1:
@@ -52,7 +68,7 @@ class PublicRegistrationForm(UserCreationForm):
     last_name = forms.CharField(max_length=150)
     email = forms.EmailField(label='University email')
     reg_or_staff_id = forms.CharField(max_length=50, label='Registration number / Staff ID')
-    department_or_unit = forms.CharField(max_length=150, label='Department')
+    department_or_unit = forms.ChoiceField(label='Department', choices=DEPARTMENT_CHOICES)
     role = forms.ChoiceField(label='I am a', choices=[(UserRole.STUDENT, 'Student'), (UserRole.LECTURER, 'Lecturer')])
 
     class Meta(UserCreationForm.Meta):

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}FMSC Incident & Suggestion Management{% endblock %} - USJ</title>
+    <link rel="icon" type="image/png" href="{% static 'images/uni-logo.png' %}?v=2">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -21,7 +22,7 @@
     <nav class="navbar navbar-expand-xl navbar-dark navbar-faculty shadow-sm">
         <div class="container-fluid px-lg-4">
             <a class="navbar-brand d-flex align-items-center" href="{% url 'landing' %}">
-                <i class="bi bi-shield-check me-2 fs-4 text-warning"></i>
+                <img src="{% static 'images/uni-logo.png' %}"alt="FMSC"class="navbar-logo me-2">
                 <div>
                     <span class="d-block lh-1 fs-5">FMSC Complaint & Suggestion Portal</span>
                     <small class="text-white-50" style="font-size: 0.72rem;">Faculty of Management Studies & Commerce · USJ</small>
@@ -218,6 +219,30 @@
             upload.onerror = () => { notice.textContent = 'Connection lost. Please try again.'; buttons.forEach(button => button.disabled = false); };
             upload.send(data);
         });
+    });
+    document.querySelectorAll('input[type="password"]').forEach(input => {
+        const group = document.createElement('div');
+        group.className = 'password-toggle-group';
+        input.parentNode.insertBefore(group, input);
+        group.appendChild(input);
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'btn btn-outline-secondary password-toggle';
+        toggle.setAttribute('aria-label', 'Show password');
+        toggle.setAttribute('aria-pressed', 'false');
+        if (input.id) toggle.setAttribute('aria-controls', input.id);
+        toggle.title = 'Show password';
+        toggle.innerHTML = '<i class="bi bi-eye" aria-hidden="true"></i>';
+        toggle.addEventListener('click', () => {
+            const showPassword = input.type === 'password';
+            input.type = showPassword ? 'text' : 'password';
+            toggle.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+            toggle.setAttribute('aria-pressed', String(showPassword));
+            toggle.title = showPassword ? 'Hide password' : 'Show password';
+            toggle.innerHTML = `<i class="bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}" aria-hidden="true"></i>`;
+        });
+        group.appendChild(toggle);
     });
     </script>
     {% block extra_scripts %}{% endblock %}

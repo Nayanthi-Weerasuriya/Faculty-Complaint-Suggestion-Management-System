@@ -3,7 +3,6 @@
 .landing-page main { padding-top:0 !important; overflow:hidden; }
 .landing-page .navbar { background:#270b15 !important; border-bottom:1px solid #f2a33a80; box-shadow:0 6px 24px #19050c40; }
 .landing-page .navbar-brand > i { display:none; }
-.landing-page .navbar-brand::before { content:'F'; display:grid; place-items:center; flex-shrink:0; width:2.8rem; height:2.8rem; border-radius:.8rem; margin-right:.8rem; background:var(--fm-saffron-500); color:var(--fm-maroon-900); font-weight:800; font-size:1.5rem; }
 .welcome-wrap { max-width:1380px; margin:0 auto; padding:0 clamp(.25rem,2.2vw,2rem); }
 .cover-hero { position:relative; isolation:isolate; display:grid; grid-template-columns:1.15fr 1fr; align-items:center; gap:clamp(2rem,4vw,4rem); padding:5rem 0 5.5rem; }
 .cover-orbits { position:absolute; width:850px; height:850px; right:-430px; top:-440px; border:1px solid #f2a33a66; border-radius:50%; z-index:-1; pointer-events:none; }
