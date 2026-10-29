@@ -8,8 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.db.models import Count, Q
-from cases.filters import ReportFilterForm
-from django.utils.dateparse import parse_date
+from cases.filters import ReportFilterForm, DateRangeFilterForm
 from config.backups import snapshot_database
 
 from cases.models import Case, CaseStatus, CasePriority, CaseType
@@ -30,16 +29,13 @@ def admin_dashboard_view(request):
 
     all_cases_qs = Case.objects.all()
 
-    for field, lookup in [('date_from', 'submitted_at__date__gte'), ('date_to', 'submitted_at__date__lte')]:
-        value = request.GET.get(field, '')
-        try:
-            parsed = parse_date(value) if value else None
-        except ValueError:
-            parsed = None
-        if value and not parsed:
-            all_cases_qs = all_cases_qs.none()
-        elif parsed:
-            all_cases_qs = all_cases_qs.filter(**{lookup: parsed})
+    date_filters = DateRangeFilterForm(request.GET)
+    if date_filters.is_valid():
+        for field, lookup in [('date_from', 'submitted_at__date__gte'), ('date_to', 'submitted_at__date__lte')]:
+            if date_filters.cleaned_data.get(field):
+                all_cases_qs = all_cases_qs.filter(**{lookup: date_filters.cleaned_data[field]})
+    else:
+        all_cases_qs = all_cases_qs.none()
     # Period KPI counts (always reflects entire faculty status)
     total_count = all_cases_qs.count()
     attempted_count = all_cases_qs.filter(status__in=[
@@ -146,6 +142,7 @@ def admin_dashboard_view(request):
         'search_query': q,
         'date_from': date_from,
         'date_to': date_to,
+        'date_filters': date_filters,
         'filter_label': filter_label,
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
@@ -262,11 +259,13 @@ def management_dashboard_view(request):
 
     for auth in authorities:
         auth_cases = all_cases.filter(assigned_authority=auth)
-        assigned_c = auth_cases.exclude(status__in=[CaseStatus.SOLVED, CaseStatus.CLOSED, CaseStatus.REJECTED]).count()
+        pending_cases = auth_cases.filter(status__in=[CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED, CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO])
+        assigned_c = pending_cases.count()
+        if not assigned_c:
+            continue
         in_prog_c = auth_cases.filter(status=CaseStatus.IN_PROGRESS).count()
         not_started_c = auth_cases.filter(status__in=[CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED]).count()
 
-        pending_cases = auth_cases.filter(status__in=[CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED, CaseStatus.IN_PROGRESS, CaseStatus.WAITING_FOR_INFO])
         pending_ages = [c.age_days for c in pending_cases]
         avg_age = round(sum(pending_ages) / len(pending_ages), 1) if pending_ages else 0
 
@@ -281,6 +280,11 @@ def management_dashboard_view(request):
     context = {
         'report_filters': report_filters,
         'complaints_count': complaints_count,
+        'complaints_percentage': round(complaints_count / total_count * 100, 2) if total_count else 0,
+        'suggestions_percentage': round(suggestions_count / total_count * 100, 2) if total_count else 0,
+        'urgent_percentage': round(urgent_count / total_count * 100, 2) if total_count else 0,
+        'normal_percentage': round(normal_count / total_count * 100, 2) if total_count else 0,
+
         'suggestions_count': suggestions_count,
         'urgent_count': urgent_count,
         'normal_count': normal_count,

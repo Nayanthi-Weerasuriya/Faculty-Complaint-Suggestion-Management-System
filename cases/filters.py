@@ -4,9 +4,18 @@ from categories.models import Category
 from authorities.models import Authority
 
 
-class ReportFilterForm(forms.Form):
+class DateRangeFilterForm(forms.Form):
     date_from = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     date_to = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+    def clean(self):
+        data = super().clean()
+        if data.get('date_from') and data.get('date_to') and data['date_from'] > data['date_to']:
+            raise forms.ValidationError('The start date must be before the end date.')
+        return data
+
+
+class ReportFilterForm(DateRangeFilterForm):
     category = forms.ModelChoiceField(required=False, queryset=Category.objects.all())
     authority = forms.ModelChoiceField(required=False, queryset=Authority.objects.all())
     priority = forms.ChoiceField(required=False, choices=[('', 'All priorities')] + list(CasePriority.choices))
@@ -16,12 +25,6 @@ class ReportFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-
-    def clean(self):
-        data = super().clean()
-        if data.get('date_from') and data.get('date_to') and data['date_from'] > data['date_to']:
-            raise forms.ValidationError('The start date must be before the end date.')
-        return data
 
     def apply(self, cases):
         if not self.is_valid():

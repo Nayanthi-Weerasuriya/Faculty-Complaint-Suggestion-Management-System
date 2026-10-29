@@ -259,6 +259,7 @@ class WorkflowRegressionTests(TransactionTestCase):
         self.case.action_started_at=timezone.now()-timedelta(days=3)
         self.case.save()
         new_authority=Authority.objects.create(name='IT Unit')
+        User.objects.create_user('it_officer', role=UserRole.AUTHORITY, assigned_authority=new_authority)
         self.login(self.coordinator)
         response=self.client.post(reverse('admin_review_case',args=[self.case.pk]), dict(category=self.category.pk,
             priority='urgent',status='assigned',assigned_authority=new_authority.pk,admin_notes='Rerouted'))

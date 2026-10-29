@@ -23,8 +23,8 @@
                 <span class="text-primary">{{ suggestions_count }}</span> <small class="fs-6 text-muted">Suggestions</small>
             </div>
             <div class="progress mt-3" style="height: 6px;">
-                <div class="progress-bar bg-secondary" role="progressbar" style="width: 60%"></div>
-                <div class="progress-bar bg-primary" role="progressbar" style="width: 40%"></div>
+                <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ complaints_percentage }}%" aria-label="Complaints" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ complaints_percentage }}"></div>
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ suggestions_percentage }}%" aria-label="Suggestions" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ suggestions_percentage }}"></div>
             </div>
         </div>
     </div>
@@ -38,8 +38,8 @@
                 <span class="text-info">{{ normal_count }}</span> <small class="fs-6 text-muted">Normal</small>
             </div>
             <div class="progress mt-3" style="height: 6px;">
-                <div class="progress-bar bg-danger" role="progressbar" style="width: 15%"></div>
-                <div class="progress-bar bg-info" role="progressbar" style="width: 85%"></div>
+                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ urgent_percentage }}%" aria-label="Urgent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ urgent_percentage }}"></div>
+                <div class="progress-bar bg-info" role="progressbar" style="width: {{ normal_percentage }}%" aria-label="Normal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ normal_percentage }}"></div>
             </div>
         </div>
     </div>
@@ -105,7 +105,7 @@
             <thead class="table-light">
                 <tr>
                     <th scope="col" style="width: 250px;">Authority Division</th>
-                    <th scope="col" class="text-center" style="width: 130px;">Total Assigned</th>
+                    <th scope="col" class="text-center" style="width: 130px;">Pending Cases</th>
                     <th scope="col" class="text-center" style="width: 130px;">In Progress</th>
                     <th scope="col" class="text-center" style="width: 130px;">Not Started</th>
                     <th scope="col" class="text-center" style="width: 150px;">Average Age</th>

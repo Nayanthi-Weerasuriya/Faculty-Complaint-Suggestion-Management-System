@@ -89,3 +89,9 @@ The supplied FMSC theme is kept in `static/css/fmsc-theme.css` and loaded after 
 ## Final review and group handoff
 
 The final audit is in [REQUIREMENTS_AUDIT.md](REQUIREMENTS_AUDIT.md). It records remaining requirements and deployment gaps without claiming full compliance. For the two-member file responsibility map and branch plan, see [docs/CONTRIBUTION_HANDOFF.md](docs/CONTRIBUTION_HANDOFF.md) and [docs/FILE_INVENTORY.csv](docs/FILE_INVENTORY.csv). Existing authorship and repository history should be preserved.
+
+## Reporting and workflow safeguards (29 October 2026)
+
+Management chart proportions use the filtered case counts, including empty results. The coordinator filter exposes inclusive submission date bounds and shows validation errors for invalid or reversed ranges. Authority pending totals and average ages both use Assigned, Not Started, In Progress and Waiting for Information; units with no pending cases are omitted, while historical cases remain in detailed reports.
+
+Before assigning a case, create or activate a user with the Relevant Authority role and assign that user to the receiving unit. An active unit without an active Authority user cannot receive assignments. Cases, attachments, comments and audit records are read-only in Django administration, including for superusers; use the role-specific portal to perform workflow changes and preserve notifications, timestamps and audit history. User, category and authority configuration remains available in administration.

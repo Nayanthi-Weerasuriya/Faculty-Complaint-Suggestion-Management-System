@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from .models import Case, CaseStatus, CaseComment
 from authorities.models import Authority
+from accounts.models import UserRole
 
 
 from .validators import validate_evidence
@@ -83,6 +84,11 @@ class CaseReviewAssignmentForm(forms.ModelForm):
         status = cleaned_data.get('status')
         authority = cleaned_data.get('assigned_authority')
         admin_notes = cleaned_data.get('admin_notes')
+
+        if authority and status != CaseStatus.REJECTED and not authority.assigned_staff.filter(
+            is_active=True, role=UserRole.AUTHORITY
+        ).exists():
+            self.add_error('assigned_authority', 'This authority has no active officer account. Ask the System Administrator to create or activate an Authority user assigned to this unit.')
 
         if status in [CaseStatus.ASSIGNED, CaseStatus.NOT_STARTED] and not authority:
             self.add_error('assigned_authority', "Please select a responsible authority before accepting or assigning this case.")

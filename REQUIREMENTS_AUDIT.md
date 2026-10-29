@@ -1,5 +1,7 @@
 # Final requirements audit
 
+Update, 29 October 2026: findings 1, 3, 4, 6 and 7 below were addressed in a subsequent change. Chart proportions are dynamic, coordinator date controls include validation, pending metrics share one definition, workflow/audit administration is read-only, and assignments require an active Authority-role handler. The original review below remains a historical record; the other limitations still apply.
+
 Reviewed 25 October 2026 against the supplied FMSC Complaint and Suggestion Management App Formal Proposal, version 1.0, dated 25 May 2026. This replaces the earlier chronological review notes. The proposal specifies system functionality; it does not supply the individual-contribution marking rubric or a required Git commit split.
 
 ## Outcome
